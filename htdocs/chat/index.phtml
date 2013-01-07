@@ -1,0 +1,166 @@
+<?php
+$user = isset($_GET["user"]) ? $_GET["user"] : "Guest";
+?>
+
+<html>
+<title>
+Central Iowa NWA WarnGEN Chat
+</title>
+<head>
+<link rel="stylesheet" type="text/css" href="ext/ext-all.css"/>
+<script type="text/javascript" src="ext/ext-base.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
+<script type="text/javascript" src="sounds/soundmanager2.js"></script>
+<script>
+Ext.namespace("soundManager");
+soundManager = new SoundManager();
+soundManager.url = "http://www.meteor.iastate.edu/~ckarsten/nwa/chat/sounds/";
+soundManager.consoleOnly = true;
+soundManager.onload = function() {
+ soundManager.createSound("blip1","http://www.meteor.iastate.edu/~ckarsten/nwa/chat/sounds/message_new.mp3");
+}
+</script>
+
+<script type="text/javascript">
+Ext.onReady(function(){
+ var ds = new Ext.data.Store({
+        baseParams : {seqnum:0},
+        seqnum     : 0,
+        autoLoad   : true,
+        autoWidth  : true,
+        proxy      : new Ext.data.HttpProxy({
+              url: 'json-chat.php',
+              method: 'GET'
+        }),
+        reader     : new Ext.data.JsonReader({
+              root: 'lsrs',
+              id: 'seqnum'
+         }, [
+         {name: 'seqnum', type: 'int'},
+         {name: 'user'},
+         {name: 'valid'},
+         {name: 'remark'}
+        ])
+  });
+
+
+ ds.on('beforeload', function(self, options){
+        self.baseParams = {'seqnum': self.seqnum};
+ });
+
+ ds.setDefaultSort('valid', 'DESC');
+
+
+ ds.on('load', function(self, records, idx){
+        for (i=0;i<records.length;i++){
+          self.seqnum = records[i].get("seqnum");
+        }
+        if (records.length > 0){
+          soundManager.play('blip1');
+          self.applySort();
+          self.fireEvent("datachanged", self); 
+        }
+//        Ext.getCmp('mygrid').getView().focusRow(<?php include 'get_count.php'; ?>);
+//        Ext.getCmp('mygrid').getView().focusRow(Ext.getCmp('mygrid').getDataSource().getTotalCount()-1);
+
+//       Ext.getCmp('mygrid').getSelectionModel().selectLastRow();
+
+
+
+ });
+
+
+
+ var gp = new Ext.grid.GridPanel({
+   id     : 'mygrid',
+   renderTo : 'gridpanel',
+   height : 450,
+   width  :  250,
+   autoWidth: true,
+   store: ds,
+   columns   : [{
+          header: "Time", sortable: false, dataIndex: 'valid', width: 65
+       }, {
+          header: "Name", sortable: false, dataIndex: 'user', width: 60, align: 'center'
+       }, {
+          header: "Message", sortable: false, dataIndex: 'remark', width: 120, height: 500
+       }
+
+   ]
+
+
+ });
+
+
+
+var messageBox = new Ext.form.TextField({
+ id : 'messagebox',
+ fieldLabel : 'Enter Text Here',
+ labelWidth: 4,
+ anchor:'98%'
+});
+
+messageBox.on('specialkey', function(field, e) {
+    if (e.getKey() == e.ENTER) {
+ Ext.Ajax.request({
+  url: 'json-chat.php',
+  method: 'GET',
+  success: function(){
+     Ext.getCmp('mygrid').getStore().reload({add:true});
+  },
+  params: {
+    said: Ext.getCmp('messagebox').getValue(),
+    user: '<?php echo "$user"; ?>',
+    seqnum: ds.getTotalCount()
+  }
+ });
+ document.getElementById('messagebox').value='';
+}
+});
+
+new Ext.form.FormPanel({
+ applyTo: 'message',
+ height: 25,
+ width: 250,
+ buttonAlign: 'left',
+ items  : [messageBox]
+});
+
+var task = {
+ run: function(){
+   Ext.getCmp('mygrid').getStore().reload({add:true});
+ },
+ interval: 10000
+}
+Ext.TaskMgr.start(task);
+
+});
+</script>
+</head>
+<body bgcolor="#333333">  
+<style type="text/css">
+.x-grid3-cell-inner {
+    white-space:normal;
+}
+.x-tree-node {
+    white-space:normal;
+}
+</style>
+
+<hr color="#333333">
+<center>
+<p><b><font size="6" color="FFFFFF">Central Iowa NWA WarnGEN Chat</font></b></p>
+</center>
+<hr color="#333333">
+</center>
+
+<table border="0" cellspacing="0" cellpadding="1" align="center">
+<tr><td>
+<div id="gridpanel"></div>
+<div id="message"></div>
+</tr></td>
+</table>
+
+
+</body>
+</html>
