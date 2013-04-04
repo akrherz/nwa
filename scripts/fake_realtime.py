@@ -14,7 +14,7 @@ import glob, os, time
 
 # First mesh point
 ARCHIVE_T0 = mx.DateTime.DateTime(2012,2,29,4,4) # was 0423z
-RT_T0 = mx.DateTime.DateTime(2013,2,25,20,30) # 2:30 PM
+RT_T0 = mx.DateTime.DateTime(2013,4,4,19,10) # 2:10 PM
 # Second mesh point
 ARCHIVE_T1 = mx.DateTime.DateTime(2012,2,29,7,37)
 RT_T1 = RT_T0 + mx.DateTime.RelativeDateTime(minutes=90) 
