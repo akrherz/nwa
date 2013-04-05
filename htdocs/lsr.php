@@ -5,18 +5,19 @@ $conn = pg_connect("dbname=nwa");
 
 if (isset($_REQUEST["all"])){
   $rs = pg_query($conn, "SELECT *, x(geom) as lon, y(geom) as lat 
-      from lsrs WHERE valid > 'TODAY' ");
+      from lsrs WHERE valid > 'TODAY' ORDER  by valid ASC ");
+  $title = "Local Storm Reports - ALL";
 } else {
   $rs = pg_query($conn, "SELECT *, x(geom) as lon, y(geom) as lat 
-      from lsrs WHERE valid > (now() - '10 minutes'::interval) and
-      valid < now() ");
-
+      from lsrs WHERE valid > (now() - '20 minutes'::interval) and
+      valid < (now() - '120 seconds'::interval)");
+  $title = "Local Storm Reports";
 }
 
 header("Content-type: text/plain");
-echo "Refresh: 3
+echo "Refresh: 1
 Threshold: 999
-Title: LSRs
+Title: ${title}
 IconFile: 1, 20, 20, 10, 10, \"lsricons.png\"
 Font: 1, 11, 1, \"Courier New\"
 ";
@@ -65,7 +66,7 @@ for ($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $d = 0;
   $ts = strtotime($row["valid"]);
-  $q = sprintf("%s %s %s\\n%s\\n%s", $row["magnitude"], $row["typetext"], date("h:i A", $ts), $row["city"], $row["remark"] );
+  $q = sprintf("%s %s %s\\n%s\\n%s", $row["magnitude"], $row["typetext"], date("h:i A", $ts), $row["city"], substr($row["remark"],0,256) );
   $icon = $ltypes[$row["type"]];
   echo sprintf("Object: %.4f,%.4f
   Threshold: 999

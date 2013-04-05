@@ -2,7 +2,7 @@ import psycopg2
 mydb = psycopg2.connect('dbname=nwa')
 mcursor = mydb.cursor()
 
-mcursor.execute("""DELETE from lsrs where valid > '2013-02-12'""")
+mcursor.execute("""DELETE from lsrs where valid > '2013-04-04'""")
 print 'Deleted %s rows' % (mcursor.rowcount,)
 
 import sys
@@ -14,11 +14,11 @@ config = ConfigParser.ConfigParser()
 config.read('/home/akrherz/projects/iem/scripts/cscap/mytokens.cfg')
 
 # Shifting
-time00 = datetime.datetime(2013,2,12,20,30)
-time01 = datetime.datetime(2013,2,25,20,21)
+time00 = datetime.datetime(2013,2,25,20,21)
+time01 = datetime.datetime(2013,4,4,19,01)
 
-time10 = datetime.datetime(2013,2,12,22,0)
-time11 = datetime.datetime(2013,2,25,22,0)
+time10 = datetime.datetime(2013,2,25,22,0)
+time11 = datetime.datetime(2013,4,4,20,40)
 
 speedup = (time11 - time01).seconds / float((time10 - time00).seconds)
 print 'Speedup is %.4f' % (speedup,)
@@ -41,7 +41,7 @@ lkp = {'HAIL': 'H',
 for entry in feed.entry:
     data = entry.to_dict()
     #print data
-    ts = datetime.datetime.strptime(data['validgmt'], '%m/%d/%Y %H:%M:%S')
+    ts = datetime.datetime.strptime(data['dryrun2time'], '%m/%d/%Y %H:%M:%S')
     if ts >= time10:
         delta = (ts - time10).seconds / speedup
         newts = time11 + datetime.timedelta(seconds=delta)
@@ -49,7 +49,7 @@ for entry in feed.entry:
         delta = (time10 - ts).seconds / speedup
         newts = time11 - datetime.timedelta(seconds=delta)
     newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    entry.set_value('dryrun2time', newtstamp)
+    entry.set_value('workshopgmt', newtstamp)
     spr_client.update(entry) 
     print ts, newts, delta
     geo = 'SRID=4326;POINT(%s %s)' % (data['lon'], data['lat'])

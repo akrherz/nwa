@@ -319,7 +319,6 @@ function loadWarnings(){
       as foo2", $this->sqlWFOBuilder(), 
    date("Y/m/d H:i", $this->sts), date("Y/m/d H:i", $this->ets), 
    date("Y/m/d H:i", $this->ets), $this->sqlTypeBuilder() );
-
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++){
         $key = sprintf("%s-%s-%s-%s", date("Y", $this->sts), $row["wfo"], 
@@ -336,6 +335,7 @@ function loadWarnings(){
         $this->warnings[$key]["area"] = $row["area"];
         $this->warnings[$key]["lat0"] = $row["lat0"];
         $this->warnings[$key]["lon0"] = $row["lon0"];
+        $this->warnings[$key]["emergency"] = $row["emergency"];
         $this->warnings[$key]["sts"] = strtotime($row["issue"]);
         $this->warnings[$key]["ets"] = strtotime($row["expire"]);
         $this->warnings[$key]["eventid"] = $row["eventid"];

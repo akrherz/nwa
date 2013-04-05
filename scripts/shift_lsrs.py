@@ -12,7 +12,7 @@ nwa = pg.connect("nwa")
 
 # First mesh point
 ARCHIVE_T0 = mx.DateTime.DateTime(2012,2,29,4,23)
-RT_T0 = mx.DateTime.DateTime(2013,2,12,20,30) # 2:30 PM
+RT_T0 = mx.DateTime.DateTime(2013,2,12,19,50) # 2:30 PM
 # Second mesh point
 ARCHIVE_T1 = mx.DateTime.DateTime(2012,2,29,7,37)
 RT_T1 = RT_T0 + mx.DateTime.RelativeDateTime(minutes=90) 
