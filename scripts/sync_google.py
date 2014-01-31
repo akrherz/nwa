@@ -53,8 +53,8 @@ for entry in feed.entry:
     #else:
     #    delta = (time10 - ts).seconds / speedup
     #    newts = time11 - datetime.timedelta(seconds=delta)
-    #newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    #entry.set_value('workshopgmt', newtstamp)
+    #newtstamp = (ts + datetime.timedelta(hours=1)).strftime('%m/%d/%Y %H:%M:%S')
+    #entry.set_value('workshoputc', newtstamp)
     #spr_client.update(entry) 
     #print ts, newts, delta
     geo = 'SRID=4326;POINT(%s %s)' % (data['lon'], data['lat'])

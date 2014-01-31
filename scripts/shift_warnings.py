@@ -20,7 +20,7 @@ print 'Removed %s rows from the nwa_warnings table' % (ncursor.rowcount,)
 # First mesh point
 ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2014,1,31,20,30) # 3:30 PM
+RT_T0 = datetime.datetime(2014,1,31,21,30) # 3:30 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
 ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
@@ -76,16 +76,16 @@ for row in pcursor:
     expire = row['expire']
     offset = ((issue - ARCHIVE_T0).days * 86400. + 
               (issue - ARCHIVE_T0).seconds) / SPEEDUP # Speed up!
-    issue = RT_T0 + datetime.timedelta(minutes=offset)
+    issue = RT_T0 + datetime.timedelta(seconds=offset)
     offset = ((expire - ARCHIVE_T0).days * 86400. +
               (expire - ARCHIVE_T0).seconds) / SPEEDUP # Speed up!
-    expire = RT_T0 + datetime.timedelta(minutes=offset)
+    expire = RT_T0 + datetime.timedelta(seconds=offset)
 
     sql = """INSERT into nwa_warnings (issue, expire, gtype, wfo, eventid,
   status, phenomena, significance, geom, emergency, team) VALUES ('%s',
   '%s', 'P', 'DMX', %s, 'NEW', '%s', '%s', 'SRID=4326;%s', 'f', 
-  'THE_WEATHER_BUREAU')""" % (issue.strftime("%Y-%m-%d %H:%M"), 
-  expire.strftime("%Y-%m-%d %H:%M"), row['eventid'], row['phenomena'],
+  'THE_WEATHER_BUREAU')""" % (issue.strftime("%Y-%m-%d %H:%M+00"), 
+  expire.strftime("%Y-%m-%d %H:%M+00"), row['eventid'], row['phenomena'],
   row['significance'], row['tgeom'])
     print '--->', row['wfo'], row['issue'], sql
     ncursor.execute( sql )

@@ -9,17 +9,21 @@ KSGF20120229_030039_V06
 KSGF20120229_085728_V06
 """
 
-import mx.DateTime
+import datetime
+import pytz
 import glob, os, time
 
 # First mesh point
-ARCHIVE_T0 = mx.DateTime.DateTime(2012,2,29,4,4) # was 0423z
-RT_T0 = mx.DateTime.DateTime(2013,4,4,19,10) # 2:10 PM
+ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
+ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
+RT_T0 = datetime.datetime(2014,1,31,21,30) # 3:30 PM
+RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = mx.DateTime.DateTime(2012,2,29,7,37)
-RT_T1 = RT_T0 + mx.DateTime.RelativeDateTime(minutes=90) 
+ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
+ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90) 
 
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).minutes / (RT_T1 - RT_T0).minutes
+SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / (RT_T1 - RT_T0).seconds
 print 'Speedup is %.2f' % (SPEEDUP,)
 
 def doit( fp, ts ):
@@ -40,16 +44,19 @@ def main():
     left = len(files)
     for fn in files:
         # KTLX20090210_180130_V03
-        ts = mx.DateTime.strptime(fn[4:19], '%Y%m%d_%H%M%S')
-      
-        offset = (ts - ARCHIVE_T0).minutes / SPEEDUP
-        fakets = RT_T0 + mx.DateTime.RelativeDateTime(minutes=offset)
-        print "Process: %s TS: %s Left: %s" % (fn, 
+        ts = datetime.datetime.strptime(fn[4:19], '%Y%m%d_%H%M%S')
+        ts = ts.replace(tzinfo=pytz.timezone("UTC"))
+        offset = ((ts - ARCHIVE_T0).days * 86400. + 
+                  (ts - ARCHIVE_T0).seconds) / SPEEDUP
+        fakets = RT_T0 + datetime.timedelta(seconds=offset)
+        print "Use: %s TS: %s Left: %s" % (fn, 
                                 fakets.strftime("%Y-%m-%d %H:%M"), left )
-        if fakets > mx.DateTime.gmt():
-            secs = int((fakets - mx.DateTime.gmt()).seconds)
+        utcnow = datetime.datetime.utcnow()
+        utcnow = utcnow.replace(tzinfo=pytz.timezone("UTC"))
+        if fakets > utcnow:
+            secs = int((fakets - utcnow).seconds)
             print 'Sleeping for %s seconds' % (secs,)
-            time.sleep( int((fakets - mx.DateTime.gmt()).seconds) )
+            time.sleep( secs )
         left -= 1
         doit( fn, fakets )
 
