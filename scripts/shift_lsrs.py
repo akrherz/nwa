@@ -1,28 +1,36 @@
 """
- Need to shift LSRs in space and time, hmmm
+ Need to shift LSRs in space and time
 """
 
-import pg
+import psycopg2
+import psycopg2.extras
 import math
-import mx.DateTime
+import datetime
+import pytz
+import network
+nt = network.Table("NEXRAD")
 from pyIEM import mesonet
-postgis = pg.connect("postgis", "iemdb", user='nobody')
-postgis.query("SET TIME ZONE 'GMT'")
-nwa = pg.connect("nwa")
+POSTGIS = psycopg2.connect(database="postgis", host="iemdb", user='nobody')
+pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
+NWA = psycopg2.connect(database="nwa")
+ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = mx.DateTime.DateTime(2012,2,29,4,23)
-RT_T0 = mx.DateTime.DateTime(2013,2,12,19,50) # 2:30 PM
+ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
+ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
+RT_T0 = datetime.datetime(2014,1,31,20,30) # 3:30 PM
+RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = mx.DateTime.DateTime(2012,2,29,7,37)
-RT_T1 = RT_T0 + mx.DateTime.RelativeDateTime(minutes=90) 
+ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
+ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90) 
 
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).minutes / (RT_T1 - RT_T0).minutes
+SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / (RT_T1 - RT_T0).seconds
 print 'Speedup is %.2f' % (SPEEDUP,)
 
-# SGF
-NEXRAD_LAT = 37.2352
-NEXRAD_LON = -93.4004
+# LSX
+NEXRAD_LAT = nt.sts['LSX']['lat']
+NEXRAD_LON = nt.sts['LSX']['lon']
 
 def getdir(u,v):
     if v == 0:
@@ -42,73 +50,100 @@ def getdir(u,v):
     return int(math.fabs(ddir))
 
 def main():
+    ''' Go!'''
+    
+    ncursor.execute("""
+    DELETE from lsrs WHERE valid > %s and valid < %s
+    """, (RT_T0 - datetime.timedelta(minutes=300),
+          RT_T1 + datetime.timedelta(minutes=300)))
+    print 'Removed %s rows from nwa lsr table' % (ncursor.rowcount,)
+    
     # Get DMX coords in 26915
-    rs = postgis.query("""SELECT 
-        x( transform( GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as x,
-        y( transform( GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as y
-        """).dictresult()
-    radx = rs[0]['x']
-    rady = rs[0]['y']
+    pcursor.execute("""SELECT 
+        ST_x( ST_transform( 
+        ST_GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as x,
+        ST_y( ST_transform( 
+        ST_GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as y
+        """)
+    row = pcursor.fetchone()
+    radx = row['x']
+    rady = row['y']
 
     # Get all LSRs within 230m of the nexrad
-    rs = postgis.query("""SELECT *, astext(geom) as tgeom,
-        x( transform( geom, 26915) ) - x( transform( GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_x,
-        y( transform( geom, 26915) ) - y( transform( GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_y
+    pcursor.execute("""SELECT *, ST_astext(geom) as tgeom,
+        ST_x( ST_transform( geom, 26915) ) - 
+            ST_x( ST_transform( 
+                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_x,
+        ST_y( ST_transform( geom, 26915) ) - 
+            ST_y( ST_transform( 
+                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_y
         from lsrs WHERE valid BETWEEN '%s' and '%s'
-        and distance( transform(geom, 26915), 
-        transform( GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) 
+        and ST_distance( ST_transform(geom, 26915), 
+            ST_transform( ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) 
         < (230.0 / 0.6214 * 1000.0)""" % (NEXRAD_LON, NEXRAD_LAT, 
                                           NEXRAD_LON, NEXRAD_LAT, 
-(ARCHIVE_T0 - mx.DateTime.RelativeDateTime(minutes=120)).strftime("%Y-%m-%d %H:%M+00"), 
-(ARCHIVE_T1 + mx.DateTime.RelativeDateTime(minutes=120)).strftime("%Y-%m-%d %H:%M+00"),
+(ARCHIVE_T0 - datetime.timedelta(minutes=120)).strftime("%Y-%m-%d %H:%M+00"), 
+(ARCHIVE_T1 + datetime.timedelta(minutes=120)).strftime("%Y-%m-%d %H:%M+00"),
  NEXRAD_LON, NEXRAD_LAT
-        ) ).dictresult()
+        ) )
 
-    for i in range(len(rs)):
-        locx = radx + rs[i]['offset_x']
-        locy = rady + rs[i]['offset_y']
+    for row in pcursor:
+        locx = radx + row['offset_x']
+        locy = rady + row['offset_y']
         # Locate nearest city and distance, hmm
-        sql = """SELECT name, distance(transform(the_geom,26915), 
-   GeomFromEWKT('SRID=26915;POINT(%s %s)')) as d,
-   %s - x(transform(the_geom,26915)) as offsetx,
-   %s - y(transform(the_geom,26915)) as offsety
+        sql = """SELECT name, ST_distance(ST_transform(the_geom,26915), 
+   ST_GeomFromEWKT('SRID=26915;POINT(%s %s)')) as d,
+   %s - ST_x(ST_transform(the_geom,26915)) as offsetx,
+   %s - ST_y(ST_transform(the_geom,26915)) as offsety
    from cities_iowa 
    ORDER by d ASC LIMIT 1""" % (locx, locy, locx, locy) 
-        rs2 = nwa.query(sql).dictresult()
-        deg = getdir( 0 - rs2[0]['offsetx'], 0 - rs2[0]['offsety'] )
+        ncursor.execute(sql)
+        row2 = ncursor.fetchone()
+        deg = getdir( 0 - row2['offsetx'], 0 - row2['offsety'] )
         drct = mesonet.drct2dirTxt( deg )
-        miles = rs2[0]['d'] * 0.0006214  # meters -> miles
-        city = "%.1f %s %s" % (miles, drct, rs2[0]['name'])
+        miles = row2['d'] * 0.0006214  # meters -> miles
+        city = "%.1f %s %s" % (miles, drct, row2['name'])
 
         # Compute the new valid time
-        ts = mx.DateTime.strptime(rs[i]['valid'][:16], '%Y-%m-%d %H:%M')
-        offset = (ts - ARCHIVE_T0).minutes / SPEEDUP # Speed up!
-        valid = RT_T0 + mx.DateTime.RelativeDateTime(minutes=offset)
+        ts = row['valid']
+        offset = ((ts - ARCHIVE_T0).days * 86400. + 
+                  (ts - ARCHIVE_T0).seconds) / SPEEDUP # Speed up!
+        valid = RT_T0 + datetime.timedelta(seconds=offset)
 
         # Query for WFO
         sql = """SELECT * from nws_ugc WHERE 
-   transform(GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326) && geom
-   and ST_Contains(geom, transform(GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326)) 
+   ST_transform(ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326) && geom
+   and ST_Contains(geom, 
+           ST_transform(ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326)) 
    """ % (locx, locy, locx, locy) 
-        rs2 = nwa.query(sql).dictresult()
-        wfo = rs2[0]['wfo']
-        cnty = rs2[0]['name']
-        st = rs2[0]['state']
+        ncursor.execute(sql)
+        row2 = ncursor.fetchone()
+        wfo = row2['wfo']
+        cnty = row2['name']
+        st = row2['state']
 
-        remark = "%s\n[WAS: %s %s]" % (rs[i]['source'], rs[i]['city'], 
-            rs[i]['county'])
+        remark = "%s\n[WAS: %s %s]" % (row['source'], row['city'], 
+            row['county'])
 
         sql = """INSERT into lsrs(valid, type, magnitude, city, county, state,
         source, remark, wfo, typetext, geom) values ('%s', '%s', %s, '%s',
         '%s', '%s', '%s', '%s', '%s', '%s', 
-        transform( GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326) )""" % (
-        valid.strftime("%Y-%m-%d %H:%M+00"), rs[i]['type'], rs[i]['magnitude'],
-        city.replace("'", ""), cnty.replace("'", ""), st, rs[i]['source'], rs[i]['remark'], wfo, 
-        rs[i]['typetext'], locx, locy)
-        print "%s,%s,%s,%s,%s,%s" % (valid.strftime("%Y-%m-%d %H:%M"), 
-                                        rs[i]['magnitude'], rs[i]['typetext'],
-                                        rs[i]['source'],  city,
-                                        rs[i]['remark'])
-        nwa.query( sql )
+        ST_transform( ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326) )
+        RETURNING ST_x(geom) as x, ST_y(geom) as y""" % (
+            valid.strftime("%Y-%m-%d %H:%M+00"), row['type'], row['magnitude'],
+            city.replace("'", ""), cnty.replace("'", ""), st, row['source'], 
+            row['remark'], wfo, 
+            row['typetext'], locx, locy)
+        ncursor.execute( sql )
+        row2 = ncursor.fetchone()
+        print "%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s" % (ts.strftime("%Y-%m-%d %H:%M"),
+                                        valid.strftime("%Y-%m-%d %H:%M"), 
+                                        row2['x'], row2['y'],
+                                        row['magnitude'], row['typetext'],
+                                        row['source'],  city, row['city'],
+                                        row['remark'])
 
 main()
+ncursor.close()
+NWA.commit()
+NWA.close()
