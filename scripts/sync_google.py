@@ -2,13 +2,14 @@ import psycopg2
 mydb = psycopg2.connect('dbname=nwa')
 mcursor = mydb.cursor()
 
-mcursor.execute("""DELETE from lsrs where valid > '2013-04-04'""")
+mcursor.execute("""DELETE from lsrs where valid > '2014-01-31'""")
 print 'Deleted %s rows' % (mcursor.rowcount,)
 
 import sys
 sys.path.insert(0, "/home/akrherz/projects/iem/scripts/cscap")
 import util
 import datetime
+import pytz
 import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read('/home/akrherz/projects/iem/scripts/cscap/mytokens.cfg')
@@ -27,7 +28,7 @@ print 'Speedup is %.4f' % (speedup,)
 # Get me a client, stat
 spr_client = util.get_spreadsheet_client(config)
 
-feed = spr_client.get_list_feed("0AqZGw0coobCxdFByVl9NYzhWSTI3Uk1hRmJ4S2Z0VGc",
+feed = spr_client.get_list_feed("0AqZGw0coobCxdFpFSU9BYVVIRUhMNVV6c2xCcXh0b2c",
                                 "od6")
 
 lkp = {'HAIL': 'H',
@@ -36,29 +37,33 @@ lkp = {'HAIL': 'H',
        'TSTM WND DMG': 'D',
        'NON-TSTM WND DMG': 'O',
        'NON-TSTM WND GST': 'N',
-       'FUNNEL CLOUD': 'C'}
+       'FUNNEL CLOUD': 'C',
+       'HEAVY RAIN': 'R',
+       'FLASH FLOOD': 'F',
+       'WALL CLOUD': 'X',
+       'LIGHTNING': 'L'}
 
 for entry in feed.entry:
     data = entry.to_dict()
     #print data
-    ts = datetime.datetime.strptime(data['dryrun2time'], '%m/%d/%Y %H:%M:%S')
-    if ts >= time10:
-        delta = (ts - time10).seconds / speedup
-        newts = time11 + datetime.timedelta(seconds=delta)
-    else:
-        delta = (time10 - ts).seconds / speedup
-        newts = time11 - datetime.timedelta(seconds=delta)
-    newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    entry.set_value('workshopgmt', newtstamp)
-    spr_client.update(entry) 
-    print ts, newts, delta
+    ts = datetime.datetime.strptime(data['dryrun1utc'], '%m/%d/%Y %H:%M:%S')
+    #if ts >= time10:
+    #    delta = (ts - time10).seconds / speedup
+    #    newts = time11 + datetime.timedelta(seconds=delta)
+    #else:
+    #    delta = (time10 - ts).seconds / speedup
+    #    newts = time11 - datetime.timedelta(seconds=delta)
+    #newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
+    #entry.set_value('workshopgmt', newtstamp)
+    #spr_client.update(entry) 
+    #print ts, newts, delta
     geo = 'SRID=4326;POINT(%s %s)' % (data['lon'], data['lat'])
     sql = """INSERT into lsrs (valid, type, magnitude, city, source,
     remark, typetext, geom) values (%s, %s, %s, %s, %s,
     %s, %s, %s)""" 
-    args = (newts.strftime("%Y-%m-%d %H:%M+00"),
+    args = (ts.strftime("%Y-%m-%d %H:%M+00"),
                 lkp[ data['type']], data['magnitude'],
-                data['city'], data['source'], data['remark'],
+                data['workshopcity'], data['source'], data['remark'],
                 data['type'], geo)
     mcursor.execute(sql, args)
 
