@@ -31,7 +31,9 @@ Title: All Warnings
 Refresh: 1
 ";
 
-$rs = pg_query($conn, "SELECT astext(geom) as t, * from nwa_warnings WHERE expire > now() and issue < now() and issue >= '2013-04-04 14:10'");
+$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings 
+		WHERE expire > now() and issue < now() 
+		and issue >= '2014-01-31 04:10'");
 
 for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
 {

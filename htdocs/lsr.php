@@ -4,11 +4,11 @@ date_default_timezone_set('America/Chicago');
 $conn = pg_connect("dbname=nwa");
 
 if (isset($_REQUEST["all"])){
-  $rs = pg_query($conn, "SELECT *, x(geom) as lon, y(geom) as lat 
+  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
       from lsrs WHERE valid > 'TODAY' ORDER  by valid ASC ");
   $title = "Local Storm Reports - ALL";
 } else {
-  $rs = pg_query($conn, "SELECT *, x(geom) as lon, y(geom) as lat 
+  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
       from lsrs WHERE valid > (now() - '20 minutes'::interval) and
       valid < (now() - '120 seconds'::interval)");
   $title = "Local Storm Reports";
