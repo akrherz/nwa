@@ -16,7 +16,7 @@ import glob, os, time
 # First mesh point
 ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2014,1,31,21,30) # 3:30 PM
+RT_T0 = datetime.datetime(2014,3,27,18,40) # 1:40 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
 ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
@@ -56,7 +56,7 @@ def main():
         if fakets > utcnow:
             secs = int((fakets - utcnow).seconds)
             print 'Sleeping for %s seconds' % (secs,)
-            time.sleep( secs )
+            #time.sleep( secs )
         left -= 1
         doit( fn, fakets )
 

@@ -6,23 +6,24 @@ include("../include/cow.php");
 $conn = pg_connect("dbname=nwa");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
-$rs = pg_query($conn, "SELECT distinct team from nwa_warnings WHERE issue >= '2013-04-04 19:10'");
+$rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
+		WHERE issue >= '2014-03-27 18:40'");
 $results = Array();
 $results["NWS Office"] = Array(
- "warnings" => 19,
- "csi" => 0.72,
- "pod" => 0.98,
- "far" => 0.26,
- "av" => 31,
- "sz" => 2288,
- "lincoln" => 31 * 0.72,
+ "warnings" => 15,
+ "csi" => 0.56,
+ "pod" => 0.88,
+ "far" => 0.40,
+ "av" => 60,
+ "sz" => 2074,
+ "lincoln" => 60 * 0.56,
 );
 
 for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,10,0,4,4,2013), mktime(21,40,0,4,4,2013) ); //!GMT
+  $cow->setLimitTime( mktime(18,40,0,3,27,2014), mktime(20,10,0,3,27,2014) ); //!GMT
   $cow->setHailSize( 1.00 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );

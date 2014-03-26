@@ -9,8 +9,8 @@ if (isset($_REQUEST["all"])){
   $title = "Local Storm Reports - ALL";
 } else {
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
-      from lsrs WHERE valid > (now() - '20 minutes'::interval) and
-      valid < (now() - '120 seconds'::interval)");
+      from lsrs WHERE display_valid > (now() - '20 minutes'::interval) and
+      display_valid < (now() - '120 seconds'::interval)");
   $title = "Local Storm Reports";
 }
 
@@ -62,7 +62,7 @@ $ltypes = Array(
  "Z"=> 3,
 );
 
-for ($i=0;$row=@pg_fetch_array($rs,$i);$i++)
+for ($i=0;$row=@pg_fetch_assoc($rs,$i);$i++)
 {
   $d = 0;
   $ts = strtotime($row["valid"]);

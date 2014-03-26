@@ -10,7 +10,7 @@ class cow {
 function cow($dbconn){
     /* Constructor */
     $this->dbconn = $dbconn;
-    pg_query($dbconn, "SET TIME ZONE 'GMT'");
+    pg_query($dbconn, "SET TIME ZONE 'UTC'");
 
     $this->wfo = Array();        /* Array of WFOs to potentially limit */
     $this->warnings = Array();   /* Array of warnings */
@@ -260,7 +260,7 @@ function computeUGC(){
             if (array_key_exists($v2, $this->ugcCache)){ continue; }
             /* Else we need to lookup the informations */
             $sql = sprintf("SELECT *, 
-                   area(transform(geom,2163)) / 1000000.0 as area 
+                   ST_area(ST_transform(geom,2163)) / 1000000.0 as area 
                    from nws_ugc WHERE ugc = '%s'", $v2);
             $rs = $this->callDB($sql);
             if (pg_num_rows($rs) > 0){
@@ -281,18 +281,18 @@ function computeSharedBorder(){
     reset($this->warnings);
     while (list($k,$v) = each($this->warnings)){
         $sql = sprintf("SELECT sum(sz) as s from (
-     SELECT length(transform(a,2163)) as sz from (
+     SELECT ST_length(ST_transform(a,2163)) as sz from (
         select 
-           intersection(
-      buffer(exteriorring(geometryn(multi(ST_union(n.geom)),1)),0.02),
-      exteriorring(geometryn(multi(ST_union(w.geom)),1))
+           ST_intersection(
+      ST_buffer(ST_exteriorring(ST_geometryn(ST_multi(ST_union(n.geom)),1)),0.02),
+      ST_exteriorring(ST_geometryn(ST_multi(ST_union(w.geom)),1))
             )  as a
             from nwa_warnings w, nws_ugc n WHERE  
             w.team = '%s' and phenomena = '%s' and eventid = '%s' 
             and n.polygon_class = 'C'
             and st_overlaps(n.geom, w.geom) 
          ) as foo
-            WHERE not isempty(a) ) as foo
+            WHERE not ST_isempty(a) ) as foo
        ", $v["wfo"], $v["phenomena"],
             $v["eventid"] );
 
@@ -308,11 +308,11 @@ function computeSharedBorder(){
 
 function loadWarnings(){
     $sql = sprintf("
-    select *, astext(geom) as tgeom from 
+    select *, ST_astext(geom) as tgeom from 
       (SELECT distinct * from 
-        (select *, area(transform(geom,2163)) / 1000000.0 as area,
-         perimeter(transform(geom,2163)) as perimeter,
-         xmax(geom) as lon0, ymax(geom) as lat0 from 
+        (select *, ST_area(ST_transform(geom,2163)) / 1000000.0 as area,
+         ST_perimeter(ST_transform(geom,2163)) as perimeter,
+         ST_xmax(geom) as lon0, ST_ymax(geom) as lat0 from 
          nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and
          expire < '%s' and %s 
          ORDER by issue ASC) as foo) 
@@ -354,9 +354,9 @@ function loadWarnings(){
 } /* End of loadWarnings() */
 
 function loadLSRs() {
-    $sql = sprintf("SELECT distinct *, x(geom) as lon0, y(geom) as lat0, 
-        astext(geom) as tgeom,
-        astext(buffer( transform(geom,2163), %s000)) as buffered
+    $sql = sprintf("SELECT distinct *, ST_x(geom) as lon0, ST_y(geom) as lat0, 
+        ST_astext(geom) as tgeom,
+        ST_astext(ST_buffer( ST_transform(geom,2163), %s000)) as buffered
         from lsrs w WHERE wfo = 'DMX' and
         valid >= '%s' and valid < '%s' and %s and
         ((type = 'M' and magnitude >= 34) or 
@@ -388,7 +388,7 @@ function areaVerify() {
         if (sizeof($v["lsrs"]) == 0){ continue; }
         $bufferedArray = Array();
         while (list($k2,$v2) = each($v["lsrs"])){
-            $bufferedArray[] = sprintf("SetSRID(GeomFromText('%s'),2163)", 
+            $bufferedArray[] = sprintf("ST_SetSRID(ST_GeomFromText('%s'),2163)", 
               $this->lsrs[$v2]["buffered"]);
         }
         $sql = sprintf("SELECT ST_Area(
@@ -412,8 +412,8 @@ function sbwVerify() {
         /* Look for LSRs! */
         $sql = sprintf("SELECT distinct *
          from lsrs w WHERE 
-         geom && SetSrid(GeometryFromText('%s'),4326) and 
-         contains(SetSrid(GeometryFromText('%s'),4326), geom) 
+         geom && ST_SetSrid(ST_GeometryFromText('%s'),4326) and 
+         ST_contains(ST_SetSrid(ST_GeometryFromText('%s'),4326), geom) 
          and %s and wfo = '%s' and
         ((type = 'M' and magnitude >= 34) or 
          (type = 'H' and magnitude >= %s) or type = 'W' or

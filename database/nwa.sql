@@ -12,6 +12,7 @@ CREATE TABLE lsrs (
     wfo character(3),
     typetext character varying(40),
     geom geometry,
+    display_valid timestamptz,
     CONSTRAINT enforce_dims_geom CHECK ((st_ndims(geom) = 2)),
     CONSTRAINT enforce_geotype_geom CHECK (((geometrytype(geom) = 'POINT'::text) OR (geom IS NULL))),
     CONSTRAINT enforce_srid_geom CHECK ((st_srid(geom) = 4326))
