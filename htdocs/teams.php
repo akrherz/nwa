@@ -6,7 +6,7 @@
 <?php
 $conn = pg_connect("dbname=nwa");
 
-echo "<table>";
+echo "<table border='1' cellpadding='6'>";
 $rs = pg_query($conn, "SELECT distinct(team) from nwa_warnings where issue > 'TODAY' ORDER by team ASC");
 for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
 {

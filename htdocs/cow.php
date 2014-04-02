@@ -44,9 +44,9 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 ?>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="/ext-3.4.0/resources/css/ext-all.css"/>
-<script type="text/javascript" src="/ext-3.4.0/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="/ext-3.4.0/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="/ext-3.4.1/resources/css/ext-all.css"/>
+<script type="text/javascript" src="/ext-3.4.1/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="/ext-3.4.1/ext-all.js"></script>
 <script type="text/javascript" src="TableGrid.js"></script>
 <script>
 Ext.onReady(function(){
