@@ -2,7 +2,7 @@ import psycopg2
 mydb = psycopg2.connect('dbname=nwa')
 mcursor = mydb.cursor()
 
-mcursor.execute("""DELETE from lsrs where valid > '2014-01-31'""")
+mcursor.execute("""DELETE from lsrs where valid > '2014-04-10'""")
 print 'Deleted %s rows' % (mcursor.rowcount,)
 
 import sys
@@ -17,13 +17,13 @@ config = ConfigParser.ConfigParser()
 config.read('/home/akrherz/projects/iem/scripts/cscap/mytokens.cfg')
 
 # Shifting
-time00 = datetime.datetime(2014,1,31,21,30)
-time01 = datetime.datetime(2013,5,31,17,30)
+time00 = datetime.datetime(2014,4,10,19,30)
+time01 = datetime.datetime(2012,3,29,14,10)
 
-time10 = datetime.datetime(2014,1,31,23,0)
-time11 = datetime.datetime(2013,5,31,20,30)
+time10 = datetime.datetime(2014,4,10,21,0)
+time11 = datetime.datetime(2012,3,29,15,40)
 
-newbase = datetime.datetime(2014,3,27,19,10)
+newbase = datetime.datetime(2014,4,10,14,30)
 
 speedup = (time11 - time01).seconds / float((time10 - time00).seconds)
 print 'Speedup is %.4f' % (speedup,)
@@ -31,7 +31,7 @@ print 'Speedup is %.4f' % (speedup,)
 # Get me a client, stat
 spr_client = util.get_spreadsheet_client(config)
 
-feed = spr_client.get_list_feed("0AqZGw0coobCxdFpFSU9BYVVIRUhMNVV6c2xCcXh0b2c",
+feed = spr_client.get_list_feed("0AqZGw0coobCxdDFQZWVqcWNYUkh6REtOd1FadFlGbUE",
                                 "od6")
 def getdir(u,v):
     if v == 0:
@@ -59,47 +59,55 @@ lkp = {'HAIL': 'H',
        'FUNNEL CLOUD': 'C',
        'HEAVY RAIN': 'R',
        'FLASH FLOOD': 'F',
+       'FLOOD': 'F',
        'WALL CLOUD': 'X',
        'LIGHTNING': 'L'}
+
+cdtbase = datetime.datetime.now()
+cdtbase = cdtbase.replace(tzinfo=pytz.timezone("America/Chicago"),second=0,
+                          microsecond=0)
 
 for entry in feed.entry:
     data = entry.to_dict()
     #print data
-    ts = datetime.datetime.strptime(data['workshoputc'], '%m/%d/%Y %H:%M:%S')
+    ts = datetime.datetime.strptime(data['workshoptimecdt'], '%m/%d/%Y %H:%M:%S')
+    ts = ts.replace(year=ts.year, month=ts.month, day=ts.day,
+                    hour=ts.hour, minute=ts.minute)
     displayts = ts
-    if data['displaytimeutc'] is not None:
-        displayts = datetime.datetime.strptime(data['displaytimeutc'], '%m/%d/%Y %H:%M:%S') + datetime.timedelta(seconds=120)
-    #delta = (ts - time00).days * 86400. + (ts - time00).seconds
-    #newts = newbase + datetime.timedelta(seconds=delta)
+    #if data['displaytimeutc'] is not None:
+    #    displayts = datetime.datetime.strptime(data['displaytimeutc'], '%m/%d/%Y %H:%M:%S') + datetime.timedelta(seconds=120)
+    delta = (ts - time01).days * 86400. + (ts - time01).seconds
+    newts = newbase + datetime.timedelta(seconds=delta)
     #newts = ts - datetime.timedelta(minutes=30)
-    #newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    #entry.set_value('workshoputc', newtstamp)
+    newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
+    entry.set_value('classtimecdt', newtstamp)
+    #spr_client.update(entry)
     
-    if data['workshopcity'] is None:
-        sql = """select name, ST_Distance(ST_Transform(
-        ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915), 
-        ST_Transform(the_geom,26915)),
-        ST_x(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915)) - ST_x(ST_Transform(the_geom,26915)),
-        ST_y(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915)) - ST_y(ST_Transform(the_geom,26915))
-        from cities_iowa 
-        ORDER by st_distance ASC LIMIT 1""" % (data['lon'], data['lat'],
-                                               data['lon'], data['lat'],
-                                               data['lon'], data['lat']) 
-        mcursor.execute(sql)
-        row2 = mcursor.fetchone()
-        print row2
-        deg = getdir( 0 - row2[2], 0 - row2[3] )
-        drct = mesonet.drct2dirTxt( deg )
-        miles = row2[1] * 0.0006214  # meters -> miles
-        entry.set_value('workshopcity',"%.1f %s %s" % (miles, drct, row2[0]))
-        spr_client.update(entry) 
-        print 'Updated'
+    #if data['workshopcity'] is None:
+    #    sql = """select name, ST_Distance(ST_Transform(
+    #    ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915), 
+    #    ST_Transform(the_geom,26915)),
+    #    ST_x(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915)) - ST_x(ST_Transform(the_geom,26915)),
+    #    ST_y(ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915)) - ST_y(ST_Transform(the_geom,26915))
+    #    from cities_iowa 
+    #    ORDER by st_distance ASC LIMIT 1""" % (data['lon'], data['lat'],
+    #                                           data['lon'], data['lat'],
+    #                                           data['lon'], data['lat']) 
+    #    mcursor.execute(sql)
+    #    row2 = mcursor.fetchone()
+    #    print row2
+    #    deg = getdir( 0 - row2[2], 0 - row2[3] )
+    #    drct = mesonet.drct2dirTxt( deg )
+    #    miles = row2[1] * 0.0006214  # meters -> miles
+    #    entry.set_value('workshopcity',"%.1f %s %s" % (miles, drct, row2[0]))
+    #    spr_client.update(entry) 
+    #    print 'Updated'
     #print ts, newts, delta
     geo = 'SRID=4326;POINT(%s %s)' % (data['lon'], data['lat'])
     sql = """INSERT into lsrs (valid, display_valid, type, magnitude, city, source,
     remark, typetext, geom, wfo) values (%s, %s, %s, %s, %s, %s,
     %s, %s, %s, 'DMX')""" 
-    args = (ts.strftime("%Y-%m-%d %H:%M+00"), displayts.strftime("%Y-%m-%d %H:%M+00"),
+    args = (newts, newts,
                 lkp[ data['type']], data['magnitude'],
                 data['workshopcity'], data['source'], data['remark'],
                 data['type'], geo)

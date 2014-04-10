@@ -1,6 +1,11 @@
 nwa
 ===
 
+Gallus 417 Class 
+2014-04-10 19:30 UTC ->  2011-05-24 20:00 UTC
+2014-04-10 21:00 UTC ->  2011-05-24 23:00 UTC
+
+
 Practice Day:
 
  21:30 UTC  31 Jan 2014 is 22:30 UTC 31 May 2013

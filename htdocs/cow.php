@@ -7,7 +7,7 @@ $conn = pg_connect("dbname=nwa");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2014-03-27 18:40'");
+		WHERE issue >= '2014-04-10 19:30'");
 $results = Array();
 $results["NWS Office"] = Array(
  "warnings" => 15,
@@ -23,7 +23,7 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(18,40,0,3,27,2014), mktime(20,10,0,3,27,2014) ); //!GMT
+  $cow->setLimitTime( mktime(19,30,0,4,10,2014), mktime(21,0,0,4,10,2014) ); //!GMT
   $cow->setHailSize( 1.00 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
