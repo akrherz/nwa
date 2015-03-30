@@ -3,27 +3,27 @@
 date_default_timezone_set('GMT');
 
 include("../include/cow.php");
-$conn = pg_connect("dbname=nwa");
+$conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2014-04-10 19:30'");
+		WHERE issue >= '2015-03-26 18:40'");
 $results = Array();
-$results["NWS Office"] = Array(
- "warnings" => 15,
- "csi" => 0.56,
- "pod" => 0.88,
- "far" => 0.40,
- "av" => 60,
- "sz" => 2074,
- "lincoln" => 60 * 0.56,
-);
+//$results["KICT ACTUAL"] = Array(
+// "warnings" => 17,
+// "csi" => 0.42,
+// "pod" => 0.60,
+// "far" => 0.41,
+// "av" => 37,
+// "sz" => 1420,
+// "lincoln" => 37.0 * 0.42,
+//);
 
 for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,30,0,4,10,2014), mktime(21,0,0,4,10,2014) ); //!GMT
+  $cow->setLimitTime( mktime(18,40,0,3,26,2015), mktime(20,10,0,3,26,2015) ); //!GMT
   $cow->setHailSize( 1.00 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
@@ -33,6 +33,7 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
   $results[ $row["team"] ] = Array(
      "warnings" =>  sizeof($cow->warnings),
      "csi" =>  $cow->computeCSI(),
+  		"tecount" => $cow->tecount,
      "pod" =>  $cow->computePOD(),
      "far" =>  $cow->computeFAR(),
      "av" =>  $cow->computeAreaVerify(),
@@ -69,6 +70,8 @@ Ext.onReady(function(){
 
 </head>
 <body>
+<span style="font-size: 48;"> &nbsp; &nbsp; http://192.168.10.201/cow.php</span><br />
+
 <button id="create-grid" type="button">Interactive Grid</button>
 <table border="1" cellpadding="2" cellspacing="0" id="datagrid" width="800">
 <thead>
@@ -81,12 +84,13 @@ Ext.onReady(function(){
 <th>Area Verify %</th>
 <th>POD</th>
 <th>FAR</th>
+<th>TE Count</th>
 </tr>
 </thead>
 <tbody>
 <?php
 while (list($k,$v) = each($results)){
-  echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td><td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td></tr>", $k, $v["warnings"], $v["lincoln"], $v["csi"], $v["sz"], $v["av"], $v["pod"], $v["far"]);
+  echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td><td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td><td>%02d</td></tr>", $k, $v["warnings"], $v["lincoln"], $v["csi"], $v["sz"], $v["av"], $v["pod"], $v["far"], $v["tecount"]);
 }
 ?>
 </tbody>
@@ -94,5 +98,6 @@ while (list($k,$v) = each($results)){
 
 <p><br />&nbsp;
 <p><img src="iemcow.jpg" align="left" /><h1>IEM COW, Moooooooo!</h1>
+
 </body>
 </html>

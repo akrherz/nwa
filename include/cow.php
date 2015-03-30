@@ -21,6 +21,7 @@ function cow($dbconn){
     $this->ltype = Array();      /* LSR Types to verify with */
     $this->ugcCache = Array();   /* UGC information */
     $this->hailsize = 0.75;      /* Hail size limitation */
+    $this->tecount = 0;
     $this->lsrbuffer = 15;       /* LSR report buffer in km */
 }
 
@@ -342,6 +343,9 @@ function loadWarnings(){
         $this->warnings[$key]["lead0"] = -1;
         $this->warnings[$key]["buffered"] = 0;
         $this->warnings[$key]["verify"] = 0;
+        if ($row["emergency"] == 't'){
+        	$this->tecount += 1;
+        }
         if ($row["gtype"] == "P"){
             $this->warnings[$key]["geom"] = $row["tgeom"];
             $this->warnings[$key]["perimeter"] = $row["perimeter"];

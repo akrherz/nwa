@@ -1,5 +1,5 @@
 <?php
-$conn = pg_connect("dbname=nwa");
+$conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 header("Content-type: text/plain");
 
@@ -26,21 +26,33 @@ $colors = Array(
 
 
 
+
+if (isset($_GET["bureau"])){
+	echo "Threshold: 999
+Title: Actual Bureau Warnings
+Refresh: 1
+";
+	
+	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings
+		WHERE expire > now() and issue < now() and team = 'THE_WEATHER_BUREAU'");
+} else{
 echo "Threshold: 999
 Title: All Warnings
 Refresh: 1
 ";
-
-$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings 
-		WHERE expire > now() and issue < now() 
-		and issue >= '2014-03-27 04:10'");
-
+	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings 
+		WHERE expire > now() and issue < now() and team != 'THE_WEATHER_BUREAU'");
+}
 for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
 {
   $meat = str_replace("MULTIPOLYGON(((", "", $row["t"]);
   $meat = str_replace(")))", "", $meat);
   $segments = explode("),(", $meat);
-  echo "Color: ".$colors[$row["phenomena"]]  ."\n";
+  if ($row["emergency"] == 't'){ 
+  	echo "Color: 85	26	139\n";
+  } else{
+  	echo "Color: ".$colors[$row["phenomena"]]  ."\n";
+  }
   while(list($q,$seg) = each($segments))
   {
     echo "Line: 3, 0, ". $row["team"] ."\n";

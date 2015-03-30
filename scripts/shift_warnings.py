@@ -1,14 +1,13 @@
 """
  Shift warnings around
 """
-
-import psycopg2
 import psycopg2.extras
 import pytz
 import datetime
-import network
-nt = network.Table("NEXRAD")
-POSTGIS = psycopg2.connect(database="postgis", host="iemdb", user='nobody')
+from pyiem.network import Table as NetworkTable
+nt = NetworkTable("NEXRAD")
+POSTGIS = psycopg2.connect(database="postgis",
+                           host="mesonet.agron.iastate.edu", user='nobody')
 pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
 NWA = psycopg2.connect(database="nwa")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -18,21 +17,21 @@ ncursor.execute("""DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' an
 print 'Removed %s rows from the nwa_warnings table' % (ncursor.rowcount,)
 
 # First mesh point
-ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
+ARCHIVE_T0 = datetime.datetime(2012, 4, 15, 0, 0)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2014,3,27,18,40) # 1:40 PM
+RT_T0 = datetime.datetime(2015, 3, 26, 18, 40)  # 1:40 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
+ARCHIVE_T1 = datetime.datetime(2012, 4, 15, 3, 45)
 ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
-RT_T1 = RT_T0 + datetime.timedelta(minutes=90) 
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / (RT_T1 - RT_T0).seconds
+SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print 'Speedup is %.2f' % (SPEEDUP,)
 
-# SGF
-NEXRAD_LAT = nt.sts['LSX']['lat']
-NEXRAD_LON = nt.sts['LSX']['lon']
+
+NEXRAD_LAT = nt.sts['ICT']['lat']
+NEXRAD_LON = nt.sts['ICT']['lon']
 
 # Get DMX coords in 26915
 pcursor.execute("""SELECT 
@@ -61,12 +60,12 @@ print 'offsetx', offsetx
 print 'offsety', offsety
 
 # Get all the warnings
-pcursor.execute("""SELECT *, 
+pcursor.execute("""SELECT *,
      ST_astext(ST_Transform(ST_Translate(ST_Transform(geom,26915),%s,%s),4236)) as tgeom
-     from warnings_%s
+     from sbw_%s w 
      WHERE expire  > '%s' and issue < '%s' and significance = 'W'
-     and phenomena in ('SV','TO') and gtype ='P' 
-     and wfo = 'LSX' ORDER by issue ASC""" % (offsetx, 
+     and phenomena in ('SV','TO') and status = 'NEW'
+     and wfo in ('ICT', 'OUN', 'GLD', 'TOP', 'DDC', 'GID', 'EAX', 'TSA') ORDER by issue ASC""" % (offsetx, 
    offsety, ARCHIVE_T1.year, 
    ARCHIVE_T0.strftime("%Y-%m-%d %H:%M+00"), ARCHIVE_T1.strftime("%Y-%m-%d %H:%M+00") 
     ) )
@@ -74,11 +73,11 @@ pcursor.execute("""SELECT *,
 for row in pcursor:
     issue = row['issue']
     expire = row['expire']
-    offset = ((issue - ARCHIVE_T0).days * 86400. + 
-              (issue - ARCHIVE_T0).seconds) / SPEEDUP # Speed up!
+    offset = ((issue - ARCHIVE_T0).days * 86400. +
+              (issue - ARCHIVE_T0).seconds) / SPEEDUP  # Speed up!
     issue = RT_T0 + datetime.timedelta(seconds=offset)
     offset = ((expire - ARCHIVE_T0).days * 86400. +
-              (expire - ARCHIVE_T0).seconds) / SPEEDUP # Speed up!
+              (expire - ARCHIVE_T0).seconds) / SPEEDUP  # Speed up!
     expire = RT_T0 + datetime.timedelta(seconds=offset)
 
     sql = """INSERT into nwa_warnings (issue, expire, gtype, wfo, eventid,

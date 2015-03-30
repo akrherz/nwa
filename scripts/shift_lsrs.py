@@ -1,36 +1,35 @@
 """
  Need to shift LSRs in space and time
 """
-
-import psycopg2
 import psycopg2.extras
 import math
 import datetime
 import pytz
-import network
-nt = network.Table("NEXRAD")
-from pyIEM import mesonet
-POSTGIS = psycopg2.connect(database="postgis", host="iemdb", user='nobody')
+import pyiem.util as util
+from pyiem.network import Table as NetworkTable
+nt = NetworkTable("NEXRAD")
+POSTGIS = psycopg2.connect(database="postgis",
+                           host="mesonet.agron.iastate.edu", user='nobody')
 pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
 NWA = psycopg2.connect(database="nwa")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = datetime.datetime(2013,5,31,22,30)
+ARCHIVE_T0 = datetime.datetime(2012,4,15,0,0)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2014,1,31,21,30) # 3:30 PM
+RT_T0 = datetime.datetime(2015, 3, 26, 18, 40) # 1:40 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = datetime.datetime(2013,6,1,1,30)
+ARCHIVE_T1 = datetime.datetime(2012,4,15,3,45)
 ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90) 
 
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / (RT_T1 - RT_T0).seconds
+SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print 'Speedup is %.2f' % (SPEEDUP,)
 
-# LSX
-NEXRAD_LAT = nt.sts['LSX']['lat']
-NEXRAD_LON = nt.sts['LSX']['lon']
+# Site NEXRAD
+NEXRAD_LAT = nt.sts['ICT']['lat']
+NEXRAD_LON = nt.sts['ICT']['lon']
 
 def getdir(u,v):
     if v == 0:
@@ -100,7 +99,7 @@ def main():
         ncursor.execute(sql)
         row2 = ncursor.fetchone()
         deg = getdir( 0 - row2['offsetx'], 0 - row2['offsety'] )
-        drct = mesonet.drct2dirTxt( deg )
+        drct = util.drct2text(deg)
         miles = row2['d'] * 0.0006214  # meters -> miles
         city = "%.1f %s %s" % (miles, drct, row2['name'])
 

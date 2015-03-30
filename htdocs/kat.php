@@ -1,5 +1,5 @@
 <?php
-$conn = pg_connect("dbname=nwa");
+$conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 header("Content-type: text/plain");
 

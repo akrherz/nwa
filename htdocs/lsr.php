@@ -1,7 +1,7 @@
 <?php
 /* Generate GR placefile of LSRs */
 date_default_timezone_set('America/Chicago');
-$conn = pg_connect("dbname=nwa");
+$conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 if (isset($_REQUEST["all"])){
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
@@ -9,8 +9,8 @@ if (isset($_REQUEST["all"])){
   $title = "Local Storm Reports - ALL";
 } else {
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
-      from lsrs WHERE display_valid > (now() - '20 minutes'::interval) and
-      display_valid < (now() - '120 seconds'::interval)");
+      from lsrs WHERE valid > (now() - '20 minutes'::interval) and
+      valid < (now() - '120 seconds'::interval)");
   $title = "Local Storm Reports";
 }
 
@@ -36,7 +36,7 @@ $ltypes = Array(
  "a"=> 15,
  "A"=> 1,
  "B"=> 5,
- "C"=> 19,
+ "C"=> 10,
  "D"=> 22,
  "E"=> 7,
  "F"=> 7,
