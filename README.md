@@ -44,6 +44,20 @@ leaders to modify the event comments to match the displaced location reality
 and to remove any hints of rememberable remarks.  These remarks may tip some
 users off to which case it was.
 
+How are Local Storm Reports (LSR)s displaced?
+---------------------------------------------
+
+The `scripts/shirt_lsrs.py` script queries the IEM's archive for NWS issued
+Local Storm Reports nearby in space and time to the transposed event.  The
+script computes the spatial offset from the transposed RADAR that the report
+occurred and then applies that same offset to the target RADAR location. That
+offset is them used to find the nearest city location so to compute the
+traditional NWS location and offset to its LSR reports (i.e. 10 N Ames). The
+location is also used to compute the new WFO associated with the report.  The
+free-form remark text in the LSR is then hand edited by the organizers within
+a Google Spreadsheet.  This Google Spreadsheet information is then synced to
+the local database by the `scripts/sync_google.py` script.
+
 Some things we have learned doing this
 --------------------------------------
 
