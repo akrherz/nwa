@@ -15,14 +15,14 @@ NWA = psycopg2.connect(database="nwa")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = datetime.datetime(2012,4,15,0,0)
+ARCHIVE_T0 = datetime.datetime(1999, 4, 8, 19, 37)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2015, 3, 26, 18, 40) # 1:40 PM
+RT_T0 = datetime.datetime(2016, 3, 26, 18, 40)  # 1:40 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = datetime.datetime(2012,4,15,3,45)
+ARCHIVE_T1 = datetime.datetime(1999, 4, 8, 22, 37)
 ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
-RT_T1 = RT_T0 + datetime.timedelta(minutes=90) 
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print 'Speedup is %.2f' % (SPEEDUP,)
@@ -31,26 +31,28 @@ print 'Speedup is %.2f' % (SPEEDUP,)
 NEXRAD_LAT = nt.sts['ICT']['lat']
 NEXRAD_LON = nt.sts['ICT']['lon']
 
+
 def getdir(u,v):
     if v == 0:
         v = 0.000000001
     dd = math.atan(u / v)
     ddir = (dd * 180.00) / math.pi
 
-    if (u > 0 and v > 0 ): # First Quad
+    if (u > 0 and v > 0):  # First Quad
         ddir = 180 + ddir
-    elif (u > 0 and v < 0 ): # Second Quad
+    elif (u > 0 and v < 0):  # Second Quad
         ddir = 360 + ddir
-    elif (u < 0 and v < 0 ): # Third Quad
+    elif (u < 0 and v < 0):  # Third Quad
         ddir = ddir
-    elif (u < 0 and v > 0 ): # Fourth Quad
+    elif (u < 0 and v > 0):  # Fourth Quad
         ddir = 180 + ddir
 
     return int(math.fabs(ddir))
 
+
 def main():
     ''' Go!'''
-    
+
     ncursor.execute("""
     DELETE from lsrs WHERE valid > %s and valid < %s
     """, (RT_T0 - datetime.timedelta(minutes=300),

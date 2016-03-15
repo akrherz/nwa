@@ -17,12 +17,12 @@ ncursor.execute("""DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' an
 print 'Removed %s rows from the nwa_warnings table' % (ncursor.rowcount,)
 
 # First mesh point
-ARCHIVE_T0 = datetime.datetime(2012, 4, 15, 0, 0)
+ARCHIVE_T0 = datetime.datetime(2011, 5, 24, 20, 0)
 ARCHIVE_T0 = ARCHIVE_T0.replace(tzinfo=pytz.timezone("UTC"))
-RT_T0 = datetime.datetime(2015, 3, 26, 18, 40)  # 1:40 PM
+RT_T0 = datetime.datetime(2015, 4, 2, 19, 30)  # 1:40 PM
 RT_T0 = RT_T0.replace(tzinfo=pytz.timezone("UTC"))
 # Second mesh point
-ARCHIVE_T1 = datetime.datetime(2012, 4, 15, 3, 45)
+ARCHIVE_T1 = datetime.datetime(2011, 5, 24, 23, 0)
 ARCHIVE_T1 = ARCHIVE_T1.replace(tzinfo=pytz.timezone("UTC"))
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 
@@ -30,8 +30,8 @@ SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print 'Speedup is %.2f' % (SPEEDUP,)
 
 
-NEXRAD_LAT = nt.sts['ICT']['lat']
-NEXRAD_LON = nt.sts['ICT']['lon']
+NEXRAD_LAT = nt.sts['TLX']['lat']
+NEXRAD_LON = nt.sts['TLX']['lon']
 
 # Get DMX coords in 26915
 pcursor.execute("""SELECT 
@@ -46,7 +46,7 @@ dmxy = row['y']
 
 # TLX
 tlx_coords = "SRID=4326;POINT(%s %s)" % (NEXRAD_LON, NEXRAD_LAT)
-pcursor.execute("""SELECT 
+pcursor.execute("""SELECT
     ST_x( ST_transform( ST_GeomFromEWKT('%s'), 26915)) as x,
     ST_y( ST_transform( ST_GeomFromEWKT('%s'), 26915)) as y
     """ % (tlx_coords, tlx_coords))
@@ -65,7 +65,8 @@ pcursor.execute("""SELECT *,
      from sbw_%s w 
      WHERE expire  > '%s' and issue < '%s' and significance = 'W'
      and phenomena in ('SV','TO') and status = 'NEW'
-     and wfo in ('ICT', 'OUN', 'GLD', 'TOP', 'DDC', 'GID', 'EAX', 'TSA') ORDER by issue ASC""" % (offsetx, 
+     and wfo in ('ICT', 'OUN', 'GLD', 'TOP', 'DDC', 'GID', 'EAX', 'TSA',
+     'FWD', 'SGF', 'LZK', 'SHV') ORDER by issue ASC""" % (offsetx, 
    offsety, ARCHIVE_T1.year, 
    ARCHIVE_T0.strftime("%Y-%m-%d %H:%M+00"), ARCHIVE_T1.strftime("%Y-%m-%d %H:%M+00") 
     ) )

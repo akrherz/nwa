@@ -1,40 +1,54 @@
 import psycopg2
-mydb = psycopg2.connect('dbname=nwa')
-mcursor = mydb.cursor()
-
-mcursor.execute("""DELETE from lsrs where valid > '2015-03-26'""")
-print 'Deleted %s rows' % (mcursor.rowcount,)
-
 import sys
-sys.path.insert(0, "/home/akrherz/projects/iem/scripts/cscap")
 # util is from cscap folder
-import util
+import pyiem.cscap_utils as util
 import datetime
 import pytz
 import math
 import pyiem.util as pyiemutil
-import ConfigParser
-config = ConfigParser.ConfigParser()
-config.read('/home/akrherz/projects/iem/scripts/cscap/mytokens.cfg')
 
-# Shifting
-time00 = datetime.datetime(2015, 3, 26, 18, 40)
-time00 = time00.replace(tzinfo=pytz.timezone("UTC"))
-#time01 = datetime.datetime(2015, 3, 26, 20, 10)
+mydb = psycopg2.connect('dbname=nwa')
+mcursor = mydb.cursor()
+mcursor.execute("""DELETE from lsrs where valid > '2016-03-15'""")
+print 'Deleted %s rows' % (mcursor.rowcount,)
 
-#time10 = datetime.datetime(2015, 2, 26, 23, 0)
-#time11 = datetime.datetime(2015, 2, 27, 0, 30)
+# ______________________________________________________________________
+# Upstream is sync_google!
+orig0 = datetime.datetime(1999, 4, 8, 19, 37)
+orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
+origB = orig0.replace(hour=20, minute=50)
+orig1 = orig0.replace(hour=23, minute=16)
 
-newbase = datetime.datetime(2015, 2, 26, 23, 0)
-newbase = newbase.replace(tzinfo=pytz.timezone("UTC"))
+workshop0 = datetime.datetime(2016, 3, 16, 18, 10)
+workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
+workshopB1 = workshop0.replace(hour=18, minute=40)
+workshopB2 = workshop0.replace(hour=18, minute=50)
+workshop1 = workshop0.replace(hour=19, minute=50)
 
-# speedup = (time11 - time01).seconds / float((time10 - time00).seconds)
-# print 'Speedup is %.4f' % (speedup,)
+speedup = ((orig1 - orig0).total_seconds() /
+           (workshop1 - workshop0).total_seconds())
+print 'Overall Speedup is %.4f' % (speedup,)
+speedup1 = ((origB - orig0).total_seconds() /
+            (workshopB1 - workshop0).total_seconds())
+print 'Par1    Speedup is %.4f' % (speedup1,)
+speedup2 = ((orig1 - origB).total_seconds() /
+            (workshop1 - workshopB2).total_seconds())
+print 'Part2   Speedup is %.4f' % (speedup2,)
+
+
+def warp(lsrtime):
+    """ Convert the LSR Time to our workshop time, of some sort"""
+    base = orig0 if lsrtime < origB else origB
+    newbase = workshop0 if lsrtime < origB else workshopB2
+    _speedup = speedup1 if lsrtime < origB else speedup2
+    return newbase + datetime.timedelta(
+                seconds=((lsrtime - base).total_seconds() / _speedup))
+# ______________________________________________________________________
 
 # Get me a client, stat
-spr_client = util.get_spreadsheet_client(config)
+spr_client = util.get_spreadsheet_client(util.get_config())
 
-feed = spr_client.get_list_feed("16MLYBh7-SiKR7ghANtTkMOhQN8s6-3z6TRVCDDRpuzM",
+feed = spr_client.get_list_feed("1V6-xV7Sm3ST-0tYpvtD5s-sMmNe_FdhKDCrVS5vOxoE",
                                 "od6")
 
 
@@ -44,13 +58,13 @@ def getdir(u, v):
     dd = math.atan(u / v)
     ddir = (dd * 180.00) / math.pi
 
-    if (u > 0 and v > 0 ): # First Quad
+    if (u > 0 and v > 0):  # First Quad
         ddir = 180 + ddir
-    elif (u > 0 and v < 0 ): # Second Quad
+    elif (u > 0 and v < 0):  # Second Quad
         ddir = 360 + ddir
-    elif (u < 0 and v < 0 ): # Third Quad
+    elif (u < 0 and v < 0):  # Third Quad
         ddir = ddir
-    elif (u < 0 and v > 0 ): # Fourth Quad
+    elif (u < 0 and v > 0):  # Fourth Quad
         ddir = 180 + ddir
 
     return int(math.fabs(ddir))
@@ -58,6 +72,8 @@ def getdir(u, v):
 lkp = {'HAIL': 'H',
        'TORNADO': 'T',
        'TSTM WND GST': 'G',
+       'WIND': 'G',
+       'TSTM WND DMG': 'D',
        'TSTM WND DMG': 'D',
        'NON-TSTM WND DMG': 'O',
        'NON-TSTM WND GST': 'N',
@@ -68,27 +84,19 @@ lkp = {'HAIL': 'H',
        'WALL CLOUD': 'X',
        'LIGHTNING': 'L'}
 
-cdtbase = datetime.datetime.now()
-cdtbase = cdtbase.replace(tzinfo=pytz.timezone("America/Chicago"), second=0,
-                          microsecond=0)
+lsrtime = orig0
 
 for entry in feed.entry:
     data = entry.to_dict()
-    # print data
-    ts = datetime.datetime.strptime(data['workshoputc'], '%m/%d/%Y %H:%M:%S')
-    ts = ts.replace(year=ts.year, month=ts.month, day=ts.day,
-                    hour=ts.hour, minute=ts.minute,
-                    tzinfo=pytz.timezone("UTC"))
-    #if data['displaytimeutc'] is not None:
-    #    displayts = datetime.datetime.strptime(data['displaytimeutc'], '%m/%d/%Y %H:%M:%S') + datetime.timedelta(seconds=120)
-    delta = (ts - time00).days * 86400. + (ts - time00).seconds
-    # newts = newbase + datetime.timedelta(seconds=delta)
-    # print newbase, delta, newts, ts
-    # newts = ts - datetime.timedelta(minutes=30)
-    # newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    #entry.set_value('testrunutc', newtstamp)
-    #spr_client.update(entry)
-
+    # Since data is CST -6, we simply need to add 6 hours
+    ts = datetime.datetime.strptime(data['obstimecst'], '%m/%d/%Y %H:%M:%S')
+    ts += datetime.timedelta(hours=6)
+    lsrtime = orig0.replace(year=ts.year, month=ts.month, day=ts.day,
+                            hour=ts.hour, minute=ts.minute)
+    newts = warp(lsrtime)
+    newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
+    entry.set_value('testrunutc', newtstamp)
+    spr_client.update(entry)
     sql = """select name, ST_Distance(ST_Transform(
         ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915), 
         ST_Transform(the_geom,26915)),
@@ -98,28 +106,31 @@ for entry in feed.entry:
         ORDER by st_distance ASC LIMIT 1""" % (data['lon'], data['lat'],
                                                data['lon'], data['lat'],
                                                data['lon'], data['lat'])
+    """
     mcursor.execute(sql)
     row2 = mcursor.fetchone()
     # print row2
-    #deg = getdir(0 - row2[2], 0 - row2[3])
-    #drct = pyiemutil.drct2text(deg)
-    #miles = row2[1] * 0.0006214  # meters -> miles
-    #newcity = "%.1f %s %s" % (miles, drct, row2[0])
-    #if data['workshopcity'] != newcity:
-    #    print '%s -> %s' % (data['workshopcity'], newcity)
-    #    entry.set_value('workshopcity', newcity)
-    #    spr_client.update(entry)
-    #    print 'Updated'
+    deg = getdir(0 - row2[2], 0 - row2[3])
+    drct = pyiemutil.drct2text(deg)
+    miles = row2[1] * 0.0006214  # meters -> miles
+    newcity = "%.1f %s %s" % (miles, drct, row2[0])
+    if data['workshopcity'] != newcity:
+        print '%s -> %s' % (data['workshopcity'], newcity)
+        entry.set_value('workshopcity', newcity)
+        spr_client.update(entry)
+        print 'Updated'
+    continue
     #print ts, newts, delta
+    """
     geo = 'SRID=4326;POINT(%s %s)' % (data['lon'], data['lat'])
     sql = """INSERT into lsrs (valid, display_valid, type, magnitude, city, source,
     remark, typetext, geom, wfo) values (%s, %s, %s, %s, %s, %s,
     %s, %s, %s, 'DMX')"""
-    args = (ts, ts,
-                lkp[ data['type']], data['magnitude'],
-                data['workshopcity'], data['source'], data['remark'],
-                data['type'], geo)
-    #print ts, newts
+    args = (newts, newts,
+            lkp[data['type']], data['magnitude'],
+            data['workshopcity'], data['source'], data['remark'],
+            data['type'], geo)
+    print lsrtime, newts
     mcursor.execute(sql, args)
 
 mcursor.close()

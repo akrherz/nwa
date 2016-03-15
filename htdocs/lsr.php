@@ -5,7 +5,7 @@ $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 if (isset($_REQUEST["all"])){
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
-      from lsrs WHERE valid > 'TODAY' ORDER  by valid ASC ");
+      from lsrs WHERE valid > '1999-04-01' and valid < '1999-05-01' ORDER  by valid ASC ");
   $title = "Local Storm Reports - ALL";
 } else {
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 

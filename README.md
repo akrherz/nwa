@@ -1,3 +1,15 @@
+
+
+ WORKSHOP ZULU       EVENT ZULU
+31 Mar 2016 1810 - 08 Apr 1999 1937
+31 Mar 2016 1840 - 08 Apr 1999 2050
+31 Mar 2016 1850 - 08 Apr 1999 2050
+31 Mar 2016 1950 - 08 Apr 1999 2316
+
+TODO:
+ [ ] Kevin wants a 4 minute reveal delay for LSRs
+ [ ] convert NWS county warnings to polygons
+
 nwa
 ===
 
