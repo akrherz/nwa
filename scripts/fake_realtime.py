@@ -22,7 +22,7 @@ orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
 origB = orig0.replace(hour=20, minute=50)
 orig1 = orig0.replace(hour=23, minute=16)
 
-workshop0 = datetime.datetime(2016, 3, 16, 18, 10)
+workshop0 = datetime.datetime(2016, 3, 31, 18, 10)
 workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
 workshopB1 = workshop0.replace(hour=18, minute=40)
 workshopB2 = workshop0.replace(hour=18, minute=50)

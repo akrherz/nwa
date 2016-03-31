@@ -9,7 +9,7 @@ import pyiem.util as pyiemutil
 
 mydb = psycopg2.connect('dbname=nwa')
 mcursor = mydb.cursor()
-mcursor.execute("""DELETE from lsrs where valid > '2016-03-15'""")
+mcursor.execute("""DELETE from lsrs where valid > '2016-03-31'""")
 print 'Deleted %s rows' % (mcursor.rowcount,)
 
 # ______________________________________________________________________
@@ -19,7 +19,7 @@ orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
 origB = orig0.replace(hour=20, minute=50)
 orig1 = orig0.replace(hour=23, minute=16)
 
-workshop0 = datetime.datetime(2016, 3, 16, 18, 10)
+workshop0 = datetime.datetime(2016, 3, 31, 18, 10)
 workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
 workshopB1 = workshop0.replace(hour=18, minute=40)
 workshopB2 = workshop0.replace(hour=18, minute=50)
@@ -95,7 +95,7 @@ for entry in feed.entry:
                             hour=ts.hour, minute=ts.minute)
     newts = warp(lsrtime)
     newtstamp = newts.strftime('%m/%d/%Y %H:%M:%S')
-    entry.set_value('testrunutc', newtstamp)
+    entry.set_value('workshoputc', newtstamp)
     spr_client.update(entry)
     sql = """select name, ST_Distance(ST_Transform(
         ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),26915), 

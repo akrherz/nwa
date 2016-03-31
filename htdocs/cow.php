@@ -7,7 +7,7 @@ $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2015-04-02 19:30'");
+		WHERE issue >= '2016-03-31 18:10'");
 $results = Array();
 //$results["KICT ACTUAL"] = Array(
 // "warnings" => 17,
@@ -23,8 +23,8 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,30,0,4,2,2015), mktime(21,0,0,4,2,2015) ); //!GMT
-  $cow->setHailSize( 1.00 );
+  $cow->setLimitTime( mktime(18,10,0,3,31,2016), mktime(19,50,0,3,31,2016) ); //!GMT
+  $cow->setHailSize( 0.75 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
   $cow->setLSRBuffer( 15 );
