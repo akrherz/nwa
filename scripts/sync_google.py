@@ -35,8 +35,9 @@ lkp = {'HAIL': 'H',
 def convtime(val):
     try:
         return datetime.datetime.strptime(val, '%m/%d/%Y %H:%M:%S')
-    except:
+    except ValueError:
         return datetime.datetime.strptime(val, '%Y-%m-%d %H:%M')
+
 
 inserts = 0
 for entry in feed.entry:
