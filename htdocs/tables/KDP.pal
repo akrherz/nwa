@@ -1,0 +1,23 @@
+;
+;Specific Differential Phase Color Table
+;
+Product: KDP
+Units: deg/km
+Step: 1.0
+
+Color4: 8 145 37 125 250
+Color4: 7 255 194 128 250
+Color4: 5 255 129 21 250
+Color4: 4 255 251 3 250
+Color4: 3 20 246 20 250
+Color4: 2.5 43 183 93 250
+Color4: 2 90 255 255 250
+Color4: 1.5 166 125 185 250
+Color4: 1 228 105 161 250
+Color4: 0.5 204 57 86 250
+Color4: 0.25 185 34 68 250
+Color4: 0 166 10 50 250
+Color4: -0.5 70 70 70 250
+Color4: -1 101 101 101 250
+Color4: -2 120 120 120 250
+Color4: -3 142 142 142 250

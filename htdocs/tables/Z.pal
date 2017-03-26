@@ -1,0 +1,23 @@
+Product: BR
+Units:   DBZ
+Step:    5
+
+color: -30 116 78 173
+color: -20 147 141 117
+color: -10 204 208 175
+color: 10 65 91 158
+color: 17.5 111 214 232
+color: 21 17 209 23
+color: 25 15 192 21
+color: 30 11 141 15
+color: 35 9 94 9
+color: 40 255 226 0
+color: 49.99 255 128 0
+color: 50 255 0 0 
+color: 59.99 113 0 0
+color: 60 255 255 255  255 146 255
+color: 65 255 117 255  255 11 227
+color: 70 178 0 255   99 0 214
+color: 75  5 236 240   0 0 0
+color: 85 0 0 0
+color: 95 0 0 0
