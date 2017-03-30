@@ -314,12 +314,11 @@ function loadWarnings(){
         (select *, ST_area(ST_transform(geom,2163)) / 1000000.0 as area,
          ST_perimeter(ST_transform(geom,2163)) as perimeter,
          ST_xmax(geom) as lon0, ST_ymax(geom) as lat0 from 
-         nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and
-         expire < '%s' and %s 
+         nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and %s 
          ORDER by issue ASC) as foo) 
       as foo2", $this->sqlWFOBuilder(), 
    date("Y/m/d H:i", $this->sts), date("Y/m/d H:i", $this->ets), 
-   date("Y/m/d H:i", $this->ets), $this->sqlTypeBuilder() );
+   $this->sqlTypeBuilder() );
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++){
         $key = sprintf("%s-%s-%s-%s", date("Y", $this->sts), $row["wfo"], 
@@ -423,12 +422,13 @@ function sbwVerify() {
          (type = 'H' and magnitude >= %s) or type = 'W' or
          type = 'T' or (type = 'G' and magnitude >= 58) or type = 'D'
          or type = 'F')
-         and valid >= '%s' and valid <= '%s' 
+         and valid >= '%s' and valid <= '%s' and valid < '%s'
          ORDER by valid ASC", 
          $v["geom"], $v["geom"], $this->sqlLSRTypeBuilder(), 
          $v["wfo"], $this->hailsize,
          date("Y/m/d H:i", strtotime($v["issue"])),
-         date("Y/m/d H:i", strtotime($v["expire"])) );
+         date("Y/m/d H:i", strtotime($v["expire"])),
+         date("Y/m/d H:i", $this->ets));
         $rs = $this->callDB($sql);
         for ($i=0;$row=@pg_fetch_array($rs,$i);$i++){
             $key = sprintf("%s-%s-%s-%s-%s", 
@@ -458,8 +458,8 @@ function sbwVerify() {
             if ($verify || $this->lsrs[$key]["tdq"]){ 
                 $this->warnings[$k]["lsrs"][] = $key;
                 $this->lsrs[$key]["warned"] = True;
-                $this->lsrs[$key]["leadtime"] = ($this->lsrs[$key]["ts"] - 
-                       $v["sts"]) / 60;
+                $this->lsrs[$key]["leadtime"] = ($this->lsrs[$key]["ts"] -
+                		$v["sts"]) / 60;
                 if ($this->warnings[$k]["lead0"] < 0){
                $this->warnings[$k]["lead0"] = $this->lsrs[$key]["leadtime"];
                 }
