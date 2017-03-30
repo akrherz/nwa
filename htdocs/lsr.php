@@ -1,16 +1,23 @@
 <?php
 /* Generate GR placefile of LSRs */
+$grversion = isset($_GET['version']) ? floatval($_GET["version"]): 1.0;
 date_default_timezone_set('America/Chicago');
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 if (isset($_REQUEST["all"])){
-  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
-      from lsrs WHERE valid > '2016-03-31' and valid < '2016-04-01' ORDER  by valid ASC ");
+  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat, ".
+  	"to_char((valid + '20 minutes'::interval) at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_end, ".
+    "to_char(valid at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_begin ".
+    "from lsrs WHERE valid > '2017-03-30' and valid < '2017-03-31' ".
+  	"ORDER  by valid ASC ");
   $title = "Local Storm Reports - ALL";
 } else {
-  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat 
-      from lsrs WHERE valid > (now() - '20 minutes'::interval) and
-      valid < (now() - '120 seconds'::interval)");
+	// Note that display_valid is used here!
+  $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat, ".
+  	"to_char((valid + '20 minutes'::interval) at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_end, ".
+    "to_char(valid at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_begin ".
+    "from lsrs WHERE display_valid > (now() - '20 minutes'::interval) and ".
+    "display_valid < (now() - '0 seconds'::interval)");
   $title = "Local Storm Reports";
 }
 
@@ -68,10 +75,15 @@ for ($i=0;$row=@pg_fetch_assoc($rs,$i);$i++)
   $ts = strtotime($row["valid"]);
   $q = sprintf("%s %s %s\\n%s\\n%s", $row["magnitude"], $row["typetext"], date("h:i A", $ts), $row["city"], substr($row["remark"],0,256) );
   $icon = $ltypes[$row["type"]];
-  echo sprintf("Object: %.4f,%.4f
-  Threshold: 999
-  Icon: 0,0,%s,1,%s,\"%s\"
-END:\n", $row['lat'], $row['lon'], $d, $icon, $q);
+  $tr = '';
+  if ($grversion >= 1.5){
+  	$tr = sprintf("TimeRange: %s %s\n", $row["iso_begin"], $row["iso_end"]);
+  }
+  echo sprintf("\nObject: %.4f,%.4f\n".
+  "Threshold: 999\n".
+  "%s".
+  "Icon: 0,0,%s,1,%s,\"%s\"\n".
+  "END:\n", $row['lat'], $row['lon'], $tr, $d, $icon, $q);
 }
 
 ?>

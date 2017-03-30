@@ -1,4 +1,5 @@
 <?php
+$grversion = isset($_GET['version']) ? floatval($_GET["version"]): 1.0;
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 header("Content-type: text/plain");
@@ -33,15 +34,22 @@ Title: Actual Bureau Warnings
 Refresh: 1
 ";
 	
-	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings
-		WHERE expire > now() and issue < now() and team = 'THE_WEATHER_BUREAU'");
+	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, *,
+	to_char(issue at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_issue,
+	to_char(expire at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_expire
+ 	from nwa_warnings
+	WHERE expire > now() and issue < now() and team = 'THE_WEATHER_BUREAU'");
 } else{
 echo "Threshold: 999
 Title: All Warnings
 Refresh: 1
 ";
-	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, * from nwa_warnings 
-		WHERE expire > now() and issue < now() and team != 'THE_WEATHER_BUREAU'");
+	$rs = pg_query($conn, "SELECT ST_astext(geom) as t, *,
+	to_char(issue at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_issue,
+	to_char(expire at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_expire
+	from nwa_warnings 
+	WHERE  issue < '2017-03-30 20:30+00' and issue > '2017-03-30 18:40+00'
+    and team != 'THE_WEATHER_BUREAU'");
 }
 for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
 {
@@ -52,6 +60,9 @@ for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
   	echo "Color: 85	26	139\n";
   } else{
   	echo "Color: ".$colors[$row["phenomena"]]  ."\n";
+  }
+  if ($grversion >= 1.5){
+  	echo sprintf("TimeRange: %s %s\n", $row["iso_issue"], $row["iso_expire"]);
   }
   while(list($q,$seg) = each($segments))
   {

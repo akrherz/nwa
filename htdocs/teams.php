@@ -3,18 +3,23 @@
 <meta http-equiv="refresh" content="15">
 </head>
 <body>
-<h3>Teams With 1+ Warning</h3>
+<h3>Teams With [Number of Valid Warnings] since 1840 UTC</h3>
 <?php
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 echo "<table border='1' cellpadding='6' cellspacing='0'>";
-$rs = pg_query($conn, "SELECT distinct(team) from nwa_warnings "
-		."where issue > 'TODAY' and obs is not null ORDER by team ASC");
+$rs = pg_query($conn, "SELECT team, count(*) from nwa_warnings "
+		."where issue >= '2017-03-30 18:40+00' and obs is not null ".
+		" and issue < '2017-03-30 20:30+00' ".
+		" GROUP by team ORDER by team ASC");
+$total = 0;
 for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
 {
+	$total += $row["count"];
    if ($i % 5 == 0){ echo "<tr>"; }
-   echo sprintf("<td>%s</td>", $row["team"]);
+   echo sprintf("<td>%s [%s]</td>", $row["team"], $row["count"]);
    if (($i + 1) % 5 == 0){ echo "</tr>"; }
 }
 echo "</table>";
+echo sprintf("<h3>All yall have issued %s warnings!</h3>", $total);
 ?>

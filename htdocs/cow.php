@@ -7,7 +7,7 @@ $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2016-03-31 18:10'");
+		WHERE issue >= '2017-03-30 18:40'");
 $results = Array();
 //$results["KICT ACTUAL"] = Array(
 // "warnings" => 17,
@@ -23,8 +23,8 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(18,10,0,3,31,2016), mktime(19,50,0,3,31,2016) ); //!GMT
-  $cow->setHailSize( 0.75 );
+  $cow->setLimitTime( mktime(18,40,0,3,30,2017), mktime(20,30,0,3,30,2017) ); //!UTC
+  $cow->setHailSize( 1 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
   $cow->setLSRBuffer( 15 );
@@ -34,12 +34,22 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
      "warnings" =>  sizeof($cow->warnings),
      "csi" =>  $cow->computeCSI(),
   		"tecount" => $cow->tecount,
+  		"missed" => $cow->computeUnwarnedEvents(),
      "pod" =>  $cow->computePOD(),
      "far" =>  $cow->computeFAR(),
      "av" =>  $cow->computeAreaVerify(),
      "sz" =>  $cow->computeAverageSize(),
      "lincoln" =>  $cow->computeAreaVerify() * $cow->computeCSI(),
   );
+/*
+  reset($cow->lsrs);
+  while (list($k, $v) = each($cow->lsrs)){
+  	if (! $v["warned"]){
+  		echo sprintf("%s %s %s </br>", $v["tdq"], date("Y/m/d H:i", $v["ts"]),
+  				$v["remark"]);
+  	}
+  }
+  */
 }
 
 ?>
@@ -85,12 +95,17 @@ Ext.onReady(function(){
 <th>POD</th>
 <th>FAR</th>
 <th>TE Count</th>
+<th>Missed LSRs</th>
 </tr>
 </thead>
 <tbody>
 <?php
 while (list($k,$v) = each($results)){
-  echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td><td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td><td>%02d</td></tr>", $k, $v["warnings"], $v["lincoln"], $v["csi"], $v["sz"], $v["av"], $v["pod"], $v["far"], $v["tecount"]);
+  echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td>".
+  		"<td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td>".
+  		"<td>%02d</td><td>%02d</td></tr>", $k, $v["warnings"], $v["lincoln"],
+  		$v["csi"], $v["sz"], $v["av"], $v["pod"], $v["far"], $v["tecount"],
+  		$v['missed']);
 }
 ?>
 </tbody>
