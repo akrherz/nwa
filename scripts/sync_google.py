@@ -67,3 +67,4 @@ for entry in feed.entry:
 mcursor.close()
 mydb.commit()
 print("Inserted %s new entries!" % (inserts,))
+print(("ALERT: Consider running assign_lsr_wfo.py to get WFO right in DB"))
