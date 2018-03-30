@@ -1,12 +1,14 @@
 """Fake the realtime delivery of archived Level II products
 """
+from __future__ import print_function
 
 import datetime
-import pytz
 import glob
 import os
 import time
 import sys
+
+import pytz
 
 NEXRAD = sys.argv[1]
 if len(NEXRAD) != 4:
@@ -14,17 +16,17 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2014, 6, 30, 15, 40)
-orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
-orig1 = orig0.replace(hour=19, minute=20)
+orig0 = datetime.datetime(2017, 6, 28, 20, 30)
+orig0 = orig0.replace(tzinfo=pytz.utc)
+orig1 = orig0 + datetime.timedelta(minutes=180)
 
-workshop0 = datetime.datetime(2017, 3, 30, 18, 40)
-workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
-workshop1 = workshop0.replace(hour=20, minute=30)
+workshop0 = datetime.datetime(2018, 3, 22, 19, 0)
+workshop0 = workshop0.replace(tzinfo=pytz.utc)
+workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = ((orig1 - orig0).total_seconds() /
            (workshop1 - workshop0).total_seconds())
-print 'Overall Speedup is %.4f' % (speedup,)
+print('Overall Speedup is %.4f' % (speedup,))
 
 
 def warp(radts):
@@ -34,8 +36,9 @@ def warp(radts):
 
 
 def doit(fp, ts):
-    cmd = "../l2munger %s %s %s" % (NEXRAD, ts.strftime("%Y/%m/%d %H:%M:%S"),
-                                    fp)
+    """Do some work please"""
+    cmd = ("../l2munger %s %s %.0f %s"
+           ) % (NEXRAD, ts.strftime("%Y/%m/%d %H:%M:%S"), speedup, fp)
     os.system(cmd)
     fp = "%s%s" % (NEXRAD, ts.strftime("%Y%m%d_%H%M%S"))
     os.system("compress %s" % (fp,))
@@ -46,6 +49,7 @@ def doit(fp, ts):
 
 
 def main():
+    """Go Main Go"""
     # Load Filenames, figure if they should be immediately moved
     os.chdir(MYDIR)
     files = glob.glob("*")
@@ -54,17 +58,17 @@ def main():
     for fn in files:
         # KTLX20090210_180130_V03
         ts = datetime.datetime.strptime(fn[4:19], '%Y%m%d_%H%M%S')
-        ts = ts.replace(tzinfo=pytz.timezone("UTC"))
+        ts = ts.replace(tzinfo=pytz.utc)
         fakets = warp(ts)
         print(("Use: %s->%s Fake: %s Left: %s"
                ) % (fn, ts.strftime("%Y%m%d%H%M"),
                     fakets.strftime("%Y-%m-%d %H:%M"),
                     left))
         utcnow = datetime.datetime.utcnow()
-        utcnow = utcnow.replace(tzinfo=pytz.timezone("UTC"))
+        utcnow = utcnow.replace(tzinfo=pytz.utc)
         if fakets > utcnow:
             secs = int((fakets - utcnow).seconds)
-            print 'Sleeping for %s seconds' % (secs,)
+            print('Sleeping for %s seconds' % (secs,))
             time.sleep(secs)
         left -= 1
         doit(fn, fakets)

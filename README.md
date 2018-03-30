@@ -1,17 +1,21 @@
+MT417 Timing
+------------
+
+| Workshop UTC | Event UTC |
+| ----- | ---- |
+| 20 Mar 2018 1930 | 24 May 2011 2000 |
+| 20 Mar 2018 2100 | 24 May 2011 2300 |
 
 
-| WORKSHOP ZULU   |    EVENT ZULU |
-|-----------------|--------------|
-| 30 Mar 2017 1840 | 30 Jun 2014 1540 |
-| 30 Mar 2017 2030 | 30 Jun 2014 1920 |
-|  6 Apr 2017 1930 | 24 May 2011 2000 |
-|  6 Apr 2017 2100 | 24 May 2011 2300 |
+National Guard Workshop
+-----------------------
 
-TODO
-----
-
-    * [ ] Kevin wants a 4 minute reveal delay for LSRs
-    * [ ] convert NWS county warnings to polygons
+We'd like to have the severe wind event (Derecho of June 29, 1998) hit Sioux
+City, IA at 0815, and progress across Iowa to the Des Moines area by 1030,
+then slow the progress in crossing the eastern half of Iowa so that it takes
+about 4 hours to reach the Mississippi River.  This slow-down will allow us
+to develop some flood concerns in the Iowa and Cedar River valleys which
+will trigger additional Guard response. 
 
 nwa
 ===

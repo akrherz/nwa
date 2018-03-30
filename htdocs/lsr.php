@@ -8,7 +8,7 @@ if (isset($_REQUEST["all"])){
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat, ".
   	"to_char((valid + '20 minutes'::interval) at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_end, ".
     "to_char(valid at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_begin ".
-    "from lsrs WHERE valid > '2017-03-30' and valid < '2017-03-31' ".
+    "from lsrs WHERE valid > '2018-03-22' and valid < '2018-03-23' ".
   	"ORDER  by valid ASC ");
   $title = "Local Storm Reports - ALL";
 } else {
@@ -76,7 +76,7 @@ for ($i=0;$row=@pg_fetch_assoc($rs,$i);$i++)
   $q = sprintf("%s %s %s\\n%s\\n%s", $row["magnitude"], $row["typetext"], date("h:i A", $ts), $row["city"], substr($row["remark"],0,256) );
   $icon = $ltypes[$row["type"]];
   $tr = '';
-  if ($grversion >= 1.5){
+  if ($grversion >= 1.5 && ! isset($_REQUEST["all"])){
   	$tr = sprintf("TimeRange: %s %s\n", $row["iso_begin"], $row["iso_end"]);
   }
   echo sprintf("\nObject: %.4f,%.4f\n".

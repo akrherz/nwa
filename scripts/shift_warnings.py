@@ -1,32 +1,36 @@
 """
  Shift warnings around
 """
+from __future__ import print_function
+import datetime
+
 import psycopg2.extras
 import pytz
-import datetime
+from pyiem.util import get_dbconn
 from pyiem.network import Table as NetworkTable
 nt = NetworkTable("NEXRAD")
-POSTGIS = psycopg2.connect(database="postgis", port="5555",
-                           host="localhost", user='nobody')
+POSTGIS = get_dbconn("postgis")
 pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
 NWA = psycopg2.connect(database="nwa")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-ncursor.execute("""DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and
-  issue > 'TODAY'""")
-print 'Removed %s rows from the nwa_warnings table' % (ncursor.rowcount,)
+ncursor.execute("""
+    DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and
+    issue > 'TODAY'
+    """)
+print('Removed %s rows from the nwa_warnings table' % (ncursor.rowcount,))
 
-orig0 = datetime.datetime(2014, 6, 30, 15, 40)
-orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
-orig1 = orig0.replace(hour=19, minute=20)
+orig0 = datetime.datetime(2017, 6, 28, 20, 30)
+orig0 = orig0.replace(tzinfo=pytz.utc)
+orig1 = orig0 + datetime.timedelta(minutes=180)
 
-workshop0 = datetime.datetime(2017, 3, 28, 13, 40)
-workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
-workshop1 = workshop0.replace(hour=15, minute=30)
+workshop0 = datetime.datetime(2018, 3, 22, 19, 0)
+workshop0 = workshop0.replace(tzinfo=pytz.utc)
+workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = ((orig1 - orig0).total_seconds() /
            (workshop1 - workshop0).total_seconds())
-print 'Overall Speedup is %.4f' % (speedup,)
+print('Overall Speedup is %.4f' % (speedup,))
 
 
 NEXRAD_LAT = nt.sts['DMX']['lat']
@@ -56,8 +60,8 @@ rady = row['y']
 
 offsetx = dmxx - radx
 offsety = dmxy - rady
-print 'offsetx', offsetx
-print 'offsety', offsety
+print('offsetx: %s' % (offsetx, ))
+print('offsety: %s' % (offsety, ))
 
 # Get all the warnings
 pcursor.execute("""SELECT *,
@@ -90,7 +94,7 @@ for row in pcursor:
            expire.strftime("%Y-%m-%d %H:%M+00"),
            row['eventid'], row['phenomena'],
            row['significance'], row['tgeom'])
-    print '--->', row['wfo'], row['issue'], sql
+    print('---> %s %s %s' % (row['wfo'], row['issue'], sql))
     ncursor.execute(sql)
 
 ncursor.close()
