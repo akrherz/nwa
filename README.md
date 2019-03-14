@@ -3,8 +3,9 @@ MT417 Timing
 
 | Workshop UTC | Event UTC |
 | ----- | ---- |
-| 20 Mar 2018 1930 | 24 May 2011 2000 |
-| 20 Mar 2018 2100 | 24 May 2011 2300 |
+| 28 Mar 2019 1800 |  9 Jul 2017 2300 |
+| 28 Mar 2019 1900 | 10 Jul 2017 0100 |
+| 28 Mar 2019 2030 | 10 Jul 2017 0400 |
 
 
 National Guard Workshop
@@ -16,6 +17,11 @@ then slow the progress in crossing the eastern half of Iowa so that it takes
 about 4 hours to reach the Mississippi River.  This slow-down will allow us
 to develop some flood concerns in the Iowa and Cedar River valleys which
 will trigger additional Guard response. 
+
+| Workshop UTC | Event UTC |
+| --- | --- |
+| 23 Apr 2018 1300 | 29 Jun 1998 1600 |
+| 23 Apr 2018 2100 | 29 Jun 1998 2030 |
 
 nwa
 ===

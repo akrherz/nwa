@@ -16,11 +16,11 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2017, 6, 28, 20, 30)
+orig0 = datetime.datetime(2011, 5, 24, 20, 0)
 orig0 = orig0.replace(tzinfo=pytz.utc)
 orig1 = orig0 + datetime.timedelta(minutes=180)
 
-workshop0 = datetime.datetime(2018, 3, 22, 19, 0)
+workshop0 = datetime.datetime(2018, 4, 24, 19, 30)
 workshop0 = workshop0.replace(tzinfo=pytz.utc)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 

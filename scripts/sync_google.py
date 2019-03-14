@@ -6,7 +6,7 @@ import psycopg2
 import pytz
 import pyiem.cscap_utils as util
 
-SHEET = "1VZmRgcXNZhGdpkkYmNwUhSsLNzrN_JlZhUI-zT3SPAk"
+SHEET = "1tkIttjziC4Ob3Gh9oWXuFs1-sE0CUNfIzpw_vjfSxek"
 
 def convtime(val):
     """Convert time"""
@@ -20,7 +20,9 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect('dbname=nwa')
     mcursor = mydb.cursor()
-    mcursor.execute("""DELETE from lsrs where date(valid) = '2018-03-22'""")
+    mcursor.execute("""
+        DELETE from lsrs where date(valid) = '2019-03-28'
+    """)
     print('Deleted %s rows' % (mcursor.rowcount,))
 
     # Get me a client, stat
