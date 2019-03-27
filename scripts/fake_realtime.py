@@ -16,12 +16,12 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2011, 5, 24, 20, 0)
-orig0 = orig0.replace(tzinfo=pytz.utc)
+orig0 = datetime.datetime(2017, 7, 10, 1, 0)
+orig0 = orig0.replace(tzinfo=pytz.UTC)
 orig1 = orig0 + datetime.timedelta(minutes=180)
 
-workshop0 = datetime.datetime(2018, 4, 24, 19, 30)
-workshop0 = workshop0.replace(tzinfo=pytz.utc)
+workshop0 = datetime.datetime(2019, 3, 25, 19, 0)
+workshop0 = workshop0.replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = ((orig1 - orig0).total_seconds() /
@@ -65,7 +65,7 @@ def main():
                     fakets.strftime("%Y-%m-%d %H:%M"),
                     left))
         utcnow = datetime.datetime.utcnow()
-        utcnow = utcnow.replace(tzinfo=pytz.utc)
+        utcnow = utcnow.replace(tzinfo=pytz.UTC)
         if fakets > utcnow:
             secs = int((fakets - utcnow).seconds)
             print('Sleeping for %s seconds' % (secs,))

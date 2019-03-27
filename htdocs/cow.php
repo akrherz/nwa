@@ -7,7 +7,7 @@ $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2018-03-22 19:00' and team != 'THE_WEATHER_BUREA2U'");
+		WHERE issue >= '2019-03-28 19:00' and team != 'THE_WEATHER_BUREA2U'");
 $results = Array();
 $tor_results = Array();
 //$results["KICT ACTUAL"] = Array(
@@ -24,7 +24,7 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,0,0,3,22,2018), mktime(20,30,0,3,22,2018) ); //!UTC
+  $cow->setLimitTime( mktime(19,0,0,3,28,2019), mktime(20,30,0,3,28,2019) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
@@ -45,7 +45,7 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,0,0,3,22,2018), mktime(20,30,0,3,22,2018) ); //!UTC
+  $cow->setLimitTime( mktime(19,0,0,3,28,2019), mktime(20,30,0,3,28,2019) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('TO') );
   $cow->setLimitLSRType( Array('TO') );

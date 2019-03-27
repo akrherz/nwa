@@ -92,10 +92,10 @@ def main():
         sql = """
         INSERT into nwa_warnings (issue, expire, gtype, wfo, eventid,
         status, phenomena, significance, geom, emergency, team) VALUES ('%s',
-        '%s', 'P', '%s', %s, 'NEW', '%s', '%s', 'SRID=4326;%s', 'f',
+        '%s', 'P', 'DMX', %s, 'NEW', '%s', '%s', 'SRID=4326;%s', 'f',
         'THE_WEATHER_BUREAU')
         """ % (issue.strftime("%Y-%m-%d %H:%M+00"),
-               expire.strftime("%Y-%m-%d %H:%M+00"), row['wfo'],
+               expire.strftime("%Y-%m-%d %H:%M+00"),
                eventid + 1, row['phenomena'],
                row['significance'], row['tgeom'])
         # print('---> %s %s %s' % (row['wfo'], row['issue'], sql))
