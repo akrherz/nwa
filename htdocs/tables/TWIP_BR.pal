@@ -1,0 +1,24 @@
+;
+; Edited by Kevin Skow NWS TOP/Rod Donavon NWS DMX 9/15/2017
+;
+Product: BR
+Units: DBZ
+Step: 5
+
+Color4:  80   255   255   255  255
+Color4:  75   255   255   255  255
+Color4:  65   255   177   255  255  132   29  134  255
+Color4:  60    90     0     0  255   40    0    0  255
+Color4:  50   255     0     0  255  150    0    0  255
+Color4:  49   245   135     0  255
+Color4:  38   255   245     5  255 
+Color4:  34     0    90     0  255 
+Color4:  22    15   210    20  255
+color4:  17.5 111   214   232  255
+color4:  10    65    91   158  255
+Color4:   5   200   200   200  255
+Color4:  -5    65    65    65  255
+Color4: -15    60     0    80  255 
+Color4: -30     0     0     0  255
+
+ 
