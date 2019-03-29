@@ -20,7 +20,7 @@ orig0 = datetime.datetime(2017, 7, 10, 1, 0)
 orig0 = orig0.replace(tzinfo=pytz.UTC)
 orig1 = orig0 + datetime.timedelta(minutes=180)
 
-workshop0 = datetime.datetime(2019, 3, 25, 19, 0)
+workshop0 = datetime.datetime(2019, 3, 28, 19, 0)
 workshop0 = workshop0.replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
