@@ -1,0 +1,21 @@
+;
+; 8bit spectrum width color table
+; Developed by NWS Paducah
+
+Product: SW
+Units:   KTS
+Step:    4
+Scale:   1.9426     ; converts internal units (M/S) to KTS
+
+RF:  100  0  100
+ 
+Color4:  40    80   235   235  255
+Color4:  28   140   255   255  255
+Color4:  20   255   255   255  255    
+Color4:  14   255    10     0  255  90     0     0  255
+Color4:  11   255   160     0  255
+Color4:   9   235   215     0  255
+color4:   7   128   128   128  255
+Color4:   4    75    75    75  255
+Color4:   2    55    55    55  255
+Color4:   0    45    45    45  255 

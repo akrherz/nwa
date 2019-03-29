@@ -1,0 +1,28 @@
+;
+;Correlation Coefficient (RhoHV) color table
+;Author: Dan Miller SOO/WFO Duluth MN
+;Uses a dark Red color to enhance CC depressions between 0.94-1.0
+
+Product: CC
+Units: None
+Decimals: 2
+Step: 0.02
+
+ND:  0  0  0
+
+Color4:  1.040  170   170   170   200
+Color4:  1.001  170   170   170   200
+Color4:  1.000   25    25    25   255
+Color4:  0.980   80     0     0   255
+Color4:  0.960  255     0     0   255
+Color4:  0.940  255   110     0   255
+Color4:  0.915  255   210     0   255
+Color4:  0.900  255   255     0   255
+Color4:  0.890  130   230     0   255
+Color4:  0.850   85   255    85   255
+Color4:  0.800  125   125   255   255
+Color4:  0.750    0     0   255   255
+Color4:  0.700    0     0   170   255
+Color4:  0.550    0     0   110   255
+Color4:  0.450   30     0    80   255
+Color4:  0.200   20     0    50   255

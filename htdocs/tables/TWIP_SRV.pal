@@ -1,0 +1,27 @@
+;
+; 
+; Developed by Rod Donavon NWS Des Moines, IA 2017
+;
+
+Product: SRV
+Units: KTS
+Step:  5
+Scale: 1.9426
+
+RF:  100  0  100
+
+Color4:  125    45    0    0  255
+Color4:   75   210  190    0  255
+Color4:   65   255  230    0  255    
+Color4:   50   255  120    5  255   
+Color4:   30   255    0    0  255
+Color4:   10   110    0    0  255 
+Color4:    2   140  115  125  255  
+Color4:    0   100  100  100  255
+Color4:   -2   105  130  105  255   
+Color4:  -10     0  100    0  255
+Color4:  -30     0  255    0  255
+Color4:  -40   100  240  240  255  
+Color4:  -65     0    0  255  255  
+Color4:  -75   100    0  210  255
+Color4: -125   255    0  210  255  
