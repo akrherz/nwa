@@ -15,7 +15,8 @@ $data = isset($_REQUEST["obs"]) ? $_REQUEST["obs"] : die("APIFAIL");
 
 $tokens = split(",", $data);
 
-$siteID = $tokens[0];
+// apostrophes cause tricky issues with downstream COW
+$siteID = str_replace("'", " ", $tokens[0]);
 $warnID = $tokens[1];
 $warnType = substr($tokens[2],0,2);
 $sts = strtotime($tokens[3]);
