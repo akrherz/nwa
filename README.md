@@ -3,9 +3,8 @@ MT417 Timing
 
 | Workshop UTC | Event UTC |
 | ----- | ---- |
-| 28 Mar 2019 1800 |  9 Jul 2017 2300 |
-| 28 Mar 2019 1900 | 10 Jul 2017 0100 |
-| 28 Mar 2019 2030 | 10 Jul 2017 0400 |
+|  11 Apr 2019 1930 | 24 May 2011 2000 |
+|  11 Apr 2019 2100 | 24 May 2011 2300 |
 
 
 National Guard Workshop
