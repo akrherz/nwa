@@ -21,18 +21,22 @@ from pyiem.util import utc, get_dbconn
 def read_example():
     """An example"""
     import geopandas as gpd
-    df = gpd.read_file('workshop2018.shp')
-    print(df['team'].unique())
+
+    df = gpd.read_file("workshop2018.shp")
+    print(df["team"].unique())
 
 
 def main(argv):
     """Go!"""
-    sts = utc(int(argv[1]), int(argv[2]), int(argv[3]),
-              int(argv[4]), int(argv[5]))
-    ets = utc(int(argv[1]), int(argv[2]), int(argv[3]),
-              int(argv[6]), int(argv[7]))
-    pgconn = get_dbconn('nwa')
-    df = read_postgis("""
+    sts = utc(
+        int(argv[1]), int(argv[2]), int(argv[3]), int(argv[4]), int(argv[5])
+    )
+    ets = utc(
+        int(argv[1]), int(argv[2]), int(argv[3]), int(argv[6]), int(argv[7])
+    )
+    pgconn = get_dbconn("nwa")
+    df = read_postgis(
+        """
         SELECT
         to_char(issue at time zone 'UTC',
                 'YYYY-MM-DDThh24:MI:SSZ') as utc_issue,
@@ -41,11 +45,15 @@ def main(argv):
         case when emergency then 'T' else 'F' end as emergency, team
         from nwa_warnings
         WHERE issue >= %s and issue < %s
-    """, pgconn, params=(sts, ets), geom_col='geom')
-    df.to_file('workshop%s.shp' % (sts.year, ))
-    print("Wrote %s records to shapefile" % (len(df.index), ))
+    """,
+        pgconn,
+        params=(sts, ets),
+        geom_col="geom",
+    )
+    df.to_file("workshop%s.shp" % (sts.year,))
+    print("Wrote %s records to shapefile" % (len(df.index),))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)
     # read_example()

@@ -3,16 +3,19 @@ import psycopg2
 import datetime
 import pytz
 
-iempgconn = psycopg2.connect(database='postgis', host='localhost', port=5555,
-                             user='nobody')
+iempgconn = psycopg2.connect(
+    database="postgis", host="localhost", port=5555, user="nobody"
+)
 iemcursor = iempgconn.cursor()
 
-pgconn = psycopg2.connect(database='nwa')
+pgconn = psycopg2.connect(database="nwa")
 cursor = pgconn.cursor()
 
-cursor.execute("""DELETE from nwa_warnings where issue > '2016-03-31'
- and team = 'THE_WEATHER_BUREAU'""")
-print("removed %s entries" % (cursor.rowcount,))
+cursor.execute(
+    """DELETE from nwa_warnings where issue > '2016-03-31'
+ and team = 'THE_WEATHER_BUREAU'"""
+)
+print ("removed %s entries" % (cursor.rowcount,))
 
 # ______________________________________________________________________
 # Upstream is sync_google!
@@ -27,15 +30,18 @@ workshopB1 = workshop0.replace(hour=18, minute=40)
 workshopB2 = workshop0.replace(hour=18, minute=50)
 workshop1 = workshop0.replace(hour=19, minute=50)
 
-speedup = ((orig1 - orig0).total_seconds() /
-           (workshop1 - workshop0).total_seconds())
-print 'Overall Speedup is %.4f' % (speedup,)
-speedup1 = ((origB - orig0).total_seconds() /
-            (workshopB1 - workshop0).total_seconds())
-print 'Par1    Speedup is %.4f' % (speedup1,)
-speedup2 = ((orig1 - origB).total_seconds() /
-            (workshop1 - workshopB2).total_seconds())
-print 'Part2   Speedup is %.4f' % (speedup2,)
+speedup = (orig1 - orig0).total_seconds() / (
+    workshop1 - workshop0
+).total_seconds()
+print "Overall Speedup is %.4f" % (speedup,)
+speedup1 = (origB - orig0).total_seconds() / (
+    workshopB1 - workshop0
+).total_seconds()
+print "Par1    Speedup is %.4f" % (speedup1,)
+speedup2 = (orig1 - origB).total_seconds() / (
+    workshop1 - workshopB2
+).total_seconds()
+print "Part2   Speedup is %.4f" % (speedup2,)
 
 
 def warp(lsrtime):
@@ -44,15 +50,20 @@ def warp(lsrtime):
     newbase = workshop0 if lsrtime < origB else workshopB2
     _speedup = speedup1 if lsrtime < origB else speedup2
     return newbase + datetime.timedelta(
-                seconds=((lsrtime - base).total_seconds() / _speedup))
+        seconds=((lsrtime - base).total_seconds() / _speedup)
+    )
+
+
 # ______________________________________________________________________
 
-iemcursor.execute("""SELECT ST_astext(ST_Simplify(geom, 0.1)),
+iemcursor.execute(
+    """SELECT ST_astext(ST_Simplify(geom, 0.1)),
  issue at time zone 'UTC', expire at time zone 'UTC',
  phenomena, significance, eventid
  from warnings_1999 w JOIN ugcs u on (w.gid = u.gid) WHERE
  w.wfo = 'DMX' and issue > '1999-04-08' and issue < '1999-04-09' ORDER by issue
- """)
+ """
+)
 for row in iemcursor:
     geo = row[0]
     issue = row[1].replace(tzinfo=pytz.timezone("UTC"))
@@ -61,12 +72,21 @@ for row in iemcursor:
     significance = row[4]
     eventid = row[5]
 
-    cursor.execute("""INSERT into nwa_warnings(issue, expire, wfo, eventid,
+    cursor.execute(
+        """INSERT into nwa_warnings(issue, expire, wfo, eventid,
      status, phenomena, significance, geom, emergency, team, gtype)
      VALUES (%s, %s, 'DMX', %s, 'NEW', %s, %s, %s, 'f', 'THE_WEATHER_BUREAU',
      'P')
-     """, (warp(issue), warp(expire), eventid, phenomena, significance,
-           'SRID=4326;%s' % (geo,)))
+     """,
+        (
+            warp(issue),
+            warp(expire),
+            eventid,
+            phenomena,
+            significance,
+            "SRID=4326;%s" % (geo,),
+        ),
+    )
 
 cursor.close()
 pgconn.commit()
