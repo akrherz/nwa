@@ -1,12 +1,12 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
-from __future__ import print_function
 import datetime
 
 import psycopg2
 import pytz
+from pyiem.util import exponential_backoff
 import pyiem.cscap_utils as util
 
-SHEET = "1tkIttjziC4Ob3Gh9oWXuFs1-sE0CUNfIzpw_vjfSxek"
+SHEET = "1MWAtuxcR2vXPK6ecIml2PmzK3Rx8y3WP58yjFix8yeE"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -38,21 +38,20 @@ def main():
     mcursor = mydb.cursor()
     mcursor.execute(
         """
-        DELETE from lsrs where date(valid) = '2019-03-28'
+        DELETE from lsrs where date(valid) = '2020-03-05'
     """
     )
     print("Deleted %s rows" % (mcursor.rowcount,))
 
     # Get me a client, stat
     config = util.get_config()
-    sheets = util.get_sheetsclient(config, "cscap")
+    sheets = util.get_sheetsclient(config, "workshop")
     f = sheets.spreadsheets().get(spreadsheetId=SHEET, includeGridData=True)
-    j = util.exponential_backoff(f.execute)
+    j = exponential_backoff(f.execute)
 
     inserts = 0
     grid = j["sheets"][0]["data"][0]
-    cols = [a["formattedValue"] for a in grid["rowData"][0]["values"]]
-    print(cols)
+    cols = [a.get("formattedValue", "") for a in grid["rowData"][0]["values"]]
     for row in grid["rowData"][1:]:
         vals = [a.get("formattedValue") for a in row["values"]]
         data = dict(zip(cols, vals))
@@ -81,7 +80,7 @@ def main():
             LKP[data["Type"]],
             0 if data["Magnitude"] == "None" else data["Magnitude"],
             data["Workshop City"],
-            data["source"],
+            data["Source"],
             data["Remark"],
             data["Type"],
             geo,
