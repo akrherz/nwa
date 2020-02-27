@@ -6,30 +6,34 @@ import datetime
 import psycopg2.extras
 from pyiem import util
 from pyiem.network import Table as NetworkTable
+from pyproj import Transformer
 
+
+T_4326_2163 = Transformer.from_proj(4326, 2163, always_xy=True)
+T_2163_4326 = Transformer.from_proj(2163, 4326, always_xy=True)
 nt = NetworkTable("NEXRAD")
-POSTGIS = psycopg2.connect(
-    database="postgis", host="mesonet.agron.iastate.edu", user="nobody"
-)
+POSTGIS = util.get_dbconn("postgis")
 pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
-NWA = psycopg2.connect(database="nwa")
+NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2017, 7, 9, 23, 0)
-RT_T0 = util.utc(2019, 3, 28, 18, 0)  # 1:00 PM
+ARCHIVE_T0 = util.utc(2017, 8, 6, 5, 1)
+RT_T0 = util.utc(2020, 3, 5, 21, 30)  # 3:00 PM
 # Second mesh point
-ARCHIVE_T1 = util.utc(2017, 7, 10, 4, 0)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=150)
+ARCHIVE_T1 = util.utc(2017, 8, 6, 7, 41)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=80)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print("Speedup is %.2f" % (SPEEDUP,))
 
 # Site NEXRAD
-REAL88D = "MPX"
-FAKE88D = "DMX"
+REAL88D = "INX"
+FAKE88D = "LSX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
+FAKE_NEXRAD_LAT = nt.sts[FAKE88D]["lat"]
+FAKE_NEXRAD_LON = nt.sts[FAKE88D]["lon"]
 
 
 def getdir(u, v):
@@ -43,8 +47,8 @@ def getdir(u, v):
         ddir = 180 + ddir
     elif u > 0 and v < 0:  # Second Quad
         ddir = 360 + ddir
-    elif u < 0 and v < 0:  # Third Quad
-        ddir = ddir
+    # elif u < 0 and v < 0:  # Third Quad
+    #    ddir = ddir
     elif u < 0 and v > 0:  # Fourth Quad
         ddir = 180 + ddir
 
@@ -64,31 +68,21 @@ def main():
     )
     print("Removed %s rows from nwa lsr table" % (ncursor.rowcount,))
 
-    # Get DMX coords in 26915
-    pcursor.execute(
-        """SELECT
-        ST_x( ST_transform(
-        ST_GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as x,
-        ST_y( ST_transform(
-        ST_GeomFromEWKT('SRID=4326;POINT(-93.723892 41.731220)'), 26915)) as y
-        """
-    )
-    row = pcursor.fetchone()
-    radx = row["x"]
-    rady = row["y"]
+    # Get Fake coords in 2163
+    radx, rady = T_4326_2163.transform(FAKE_NEXRAD_LON, FAKE_NEXRAD_LAT)
 
     # Get all LSRs within 230m of the nexrad
     pcursor.execute(
         """SELECT *, ST_astext(geom) as tgeom,
-        ST_x( ST_transform( geom, 26915) ) -
+        ST_x( ST_transform( geom, 2163) ) -
             ST_x( ST_transform(
-                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_x,
-        ST_y( ST_transform( geom, 26915) ) -
+                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_x,
+        ST_y( ST_transform( geom, 2163) ) -
             ST_y( ST_transform(
-                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as offset_y
+                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_y
         from lsrs WHERE valid BETWEEN '%s' and '%s'
-        and ST_distance( ST_transform(geom, 26915),
-            ST_transform( ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915))
+        and ST_distance( ST_transform(geom, 2163),
+            ST_transform( ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163))
         < (230.0 / 0.6214 * 1000.0)
     """
         % (
@@ -110,13 +104,14 @@ def main():
     for row in pcursor:
         locx = radx + row["offset_x"]
         locy = rady + row["offset_y"]
+        lon, lat = T_2163_4326.transform(locx, locy)
         # Locate nearest city and distance, hmm
         sql = """
-            SELECT name, ST_distance(ST_transform(the_geom, 26915),
-            ST_GeomFromEWKT('SRID=26915;POINT(%s %s)')) as d,
-            %s - ST_x(ST_transform(the_geom,26915)) as offsetx,
-            %s - ST_y(ST_transform(the_geom,26915)) as offsety
-            from cities_iowa
+            SELECT name, ST_distance(ST_transform(geom, 2163),
+            ST_GeomFromEWKT('SRID=2163;POINT(%s %s)')) as d,
+            %s - ST_x(ST_transform(geom,2163)) as offsetx,
+            %s - ST_y(ST_transform(geom,2163)) as offsety
+            from cities
             ORDER by d ASC LIMIT 1
         """ % (
             locx,
@@ -142,9 +137,9 @@ def main():
         # Query for WFO
         sql = """
         SELECT * from nws_ugc WHERE
-   ST_transform(ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326) && geom
+   ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326) && geom
    and ST_Contains(geom,
-           ST_transform(ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'),4326))
+           ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326))
         """ % (
             locx,
             locy,
@@ -165,8 +160,7 @@ def main():
         INSERT into lsrs(valid, type, magnitude, city, county, state,
         source, remark, wfo, typetext, geom) values ('%s', '%s', %s, '%s',
         '%s', '%s', '%s', '%s', '%s', '%s',
-        ST_transform( ST_GeomFromEWKT('SRID=26915;POINT(%s %s)'), 4326))
-        RETURNING ST_x(geom) as x, ST_y(geom) as y
+        ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'))
         """ % (
             valid.strftime("%Y-%m-%d %H:%M+00"),
             row["type"],
@@ -175,27 +169,26 @@ def main():
             cnty.replace("'", ""),
             st,
             row["source"],
-            row["remark"],
+            row["remark"].replace("'", ""),
             wfo,
             row["typetext"],
-            locx,
-            locy,
+            lon,
+            lat,
         )
         ncursor.execute(sql)
-        row2 = ncursor.fetchone()
         print(
             ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s")
             % (
                 ts.strftime("%Y-%m-%d %H:%M"),
                 valid.strftime("%Y-%m-%d %H:%M"),
-                row2["x"],
-                row2["y"],
+                lon,
+                lat,
                 row["magnitude"],
                 row["typetext"],
                 row["source"],
                 city,
                 row["city"],
-                row["remark"],
+                row["remark"].replace(",", " "),
             )
         )
     ncursor.close()
