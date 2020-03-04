@@ -13,7 +13,7 @@ $rs = pg_prepare($conn, "DELETE", "DELETE from nwa_warnings
 		WHERE issue = $1 and team = $2 and eventid = $3");
 $data = isset($_REQUEST["obs"]) ? $_REQUEST["obs"] : die("APIFAIL");
 
-$tokens = split(",", $data);
+$tokens = explode(",", $data);
 
 // apostrophes cause tricky issues with downstream COW
 $siteID = str_replace("'", " ", $tokens[0]);

@@ -7,7 +7,7 @@ putenv("TZ=GMT");
 
 class cow {
 
-function cow($dbconn){
+function __construct($dbconn){
     /* Constructor */
     $this->dbconn = $dbconn;
     pg_query($dbconn, "SET TIME ZONE 'UTC'");
@@ -81,7 +81,8 @@ function sqlLSRTypeBuilder(){
     reset($this->ltype);
     if (sizeof($this->ltype) == 0){ return "1 = 1"; }
     $l = Array();
-    while( list($k,$v) = each($this->ltype)){
+    foreach($this->ltype as $k => $v)
+    {
         if ($v == "TO"){ $l[] = "T"; }
         else if ($v == "SV"){ $l[] = "H"; $l[] = "G"; $l[] = "D"; }
         else if ($v == "MA"){ $l[] = "M"; $l[] = "W"; }
@@ -102,21 +103,21 @@ function sqlTypeBuilder(){
 
 function computeAverageSize(){
     if (sizeof($this->warnings) == 0){ return 0; }
-    reset($this->warnings);
     $polysz = 0;
-    while (list($k,$v) = each($this->warnings)){
+    foreach($this->warnings as $k => $v)
+    {
         $polysz += $v["parea"];
     }
     return $polysz / floatval(sizeof($this->warnings));
 }
 
 function computeSizeReduction(){
-    reset($this->warnings);
     $polysz = 0;
     $countysz = 0;
-    while (list($k,$v) = each($this->warnings)){
+    foreach($this->warnings as $k => $v)
+    {
         $polysz += $v["parea"];
-        while (list($k2,$v2) = each($v["ugc"])){
+        foreach($v["ugc"] as $k2 => $v2){
             $countysz += $this->ugcCache[$v2]["area"];
         }
     }
@@ -132,9 +133,9 @@ function computeUnwarnedEvents(){
 function computeWarnedEvents(){
     if (sizeof($this->lsrs) == 0){ return 0; }
 
-    reset($this->lsrs);
     $counter = 0;
-    while (list($k,$v) = each($this->lsrs)){
+    foreach($this->lsrs as $k => $v)
+    {
         if ($v["warned"]){ $counter += 1; }
     }
     return $counter;
@@ -145,7 +146,8 @@ function computeTDQEvents(){
 
     reset($this->lsrs);
     $counter = 0;
-    while (list($k,$v) = each($this->lsrs)){
+    foreach($this->lsrs as $k => $v)
+    {
         if ($v["tdq"]){ $counter += 1; }
     }
     return $counter;
@@ -155,8 +157,8 @@ function computeMaxLeadTime(){
    if (sizeof($this->lsrs) == 0){ return 0; }
 
    $large = 0;
-   reset($this->lsrs);
-   while (list($k,$v) = each($this->lsrs)){
+    foreach($this->lsrs as $k => $v)
+   {
        if ($v["leadtime"] > $large){ $large = $v["leadtime"]; }
    }
    return $large;
@@ -164,8 +166,7 @@ function computeMaxLeadTime(){
 function computeMinLeadTime(){
    if (sizeof($this->lsrs) == 0){ return 0; }
    $smallest = 99;
-   reset($this->lsrs);
-   while (list($k,$v) = each($this->lsrs)){
+   foreach($this->lsrs as $k => $v){
        if ($v["leadtime"] < $smallest){ $smallest = $v["leadtime"]; }
    }
    return $smallest;
@@ -174,8 +175,7 @@ function computeMinLeadTime(){
 
 function computeAllLeadTime(){
    $ar = Array();
-   reset($this->lsrs);
-   while (list($k,$v) = each($this->lsrs)){
+   foreach($this->lsrs as $k => $v){
        if ($v["leadtime"] != "NA"){ $ar[] = $v["leadtime"]; }
    }
    if (sizeof($ar) == 0){ return 0; }
@@ -184,8 +184,7 @@ function computeAllLeadTime(){
 
 function computeAverageLeadTime(){
    $ar = Array();
-   reset($this->warnings);
-   while (list($k,$v) = each($this->warnings)){
+   foreach($this->warnings as $k => $v){
        if ($v["lead0"] > -1){ $ar[] = $v["lead0"]; }
    }
    if (sizeof($ar) == 0){ return 0; }
@@ -195,8 +194,7 @@ function computeAverageLeadTime(){
 function computeAveragePerimeterRatio(){
    $shared = 0;
    $total = 0;
-   reset($this->warnings);
-   while (list($k,$v) = each($this->warnings)){
+   foreach($this->warnings as $k => $v){
        $shared += $v["sharedborder"];
        $total += $v["perimeter"];
    }
@@ -227,8 +225,7 @@ function computeAreaVerify(){
     $polysz = 0;
     $lsrsz = 0;
     if (sizeof($this->warnings) == 0){ return 0; }
-    reset($this->warnings);
-    while (list($k,$v) = each($this->warnings)){
+    foreach($this->warnings as $k => $v){
         $polysz += $v["parea"];
         $lsrsz += $v["buffered"];
     }
@@ -242,9 +239,8 @@ function computeWarningsVerifiedPercent(){
 }
 
 function computeWarningsVerified(){
-    reset($this->warnings);
     $counter = 0;
-    while (list($k,$v) = each($this->warnings)){
+    foreach($this->warnings as $k => $v){
         if ($v["verify"]){ $counter += 1; }
     }
     return $counter;
@@ -256,8 +252,8 @@ function computeWarningsUnverified(){
 
 function computeUGC(){
     reset($this->warnings);
-    while (list($k,$v) = each($this->warnings)){
-        while (list($k2,$v2) = each($v["ugc"])){
+    foreach($this->warnings as $k => $v){
+        foreach($v["ugc"] as $k => $v){
             if (array_key_exists($v2, $this->ugcCache)){ continue; }
             /* Else we need to lookup the informations */
             $sql = sprintf("SELECT *, 
@@ -279,8 +275,7 @@ function computeUGC(){
 } /* End of computeUGC() */
 
 function computeSharedBorder(){
-    reset($this->warnings);
-    while (list($k,$v) = each($this->warnings)){
+    foreach($this->warnings as $k => $v){
         $sql = sprintf("SELECT sum(sz) as s from (
      SELECT ST_length(ST_transform(a,2163)) as sz from (
         select 
@@ -386,11 +381,10 @@ function loadLSRs() {
 } /* End of loadLSRs() */
 
 function areaVerify() {
-    reset($this->warnings);
-    while (list($k,$v) = each($this->warnings)) {
+    foreach($this->warnings as $k => $v) {
         if (sizeof($v["lsrs"]) == 0){ continue; }
         $bufferedArray = Array();
-        while (list($k2,$v2) = each($v["lsrs"])){
+        foreach($v["lsrs"] as $k2 => $v2){
             $bufferedArray[] = sprintf("ST_SetSRID(ST_GeomFromText('%s'),2163)", 
               $this->lsrs[$v2]["buffered"]);
         }
@@ -410,8 +404,7 @@ function areaVerify() {
 }
 
 function sbwVerify() {
-    reset($this->warnings);
-    while (list($k,$v) = each($this->warnings)) {
+    foreach($this->warnings as $k => $v) {
         /* Look for LSRs! */
         $sql = sprintf("SELECT distinct *
          from lsrs w WHERE 

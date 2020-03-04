@@ -7,7 +7,7 @@ $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
 $rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2019-03-28 19:00' and team != 'THE_WEATHER_BUREA2U'");
+		WHERE issue >= '2020-03-03 19:00' and team != 'THE_WEATHER_BUREA2U'");
 $results = Array();
 $tor_results = Array();
 //$results["KICT ACTUAL"] = Array(
@@ -20,11 +20,11 @@ $tor_results = Array();
 // "lincoln" => 37.0 * 0.42,
 //);
 
-for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
+for($i=0;$row=pg_fetch_array($rs);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,0,0,3,28,2019), mktime(20,30,0,3,28,2019) ); //!UTC
+  $cow->setLimitTime( mktime(19,0,0,3,3,2020), mktime(20,30,0,3,3,2020) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
@@ -45,7 +45,7 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,0,0,3,28,2019), mktime(20,30,0,3,28,2019) ); //!UTC
+  $cow->setLimitTime( mktime(19,0,0,3,3,2020), mktime(23,30,0,3,3,2020) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('TO') );
   $cow->setLimitLSRType( Array('TO') );
@@ -78,9 +78,9 @@ for($i=0;$row=@pg_fetch_array($rs,$i);$i++)
 ?>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="/ext-3.4.1/resources/css/ext-all.css"/>
-<script type="text/javascript" src="/ext-3.4.1/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="/ext-3.4.1/ext-all.js"></script>
+<link rel="stylesheet" type="text/css" href="/vendor/ext/3.4.1/resources/css/ext-all.css"/>
+<script type="text/javascript" src="/vendor/ext/3.4.1/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="/vendor/ext/3.4.1/ext-all.js"></script>
 <script type="text/javascript" src="TableGrid.js"></script>
 <script>
 Ext.onReady(function(){
@@ -117,7 +117,7 @@ Ext.onReady(function(){
 
 </head>
 <body style="margin: 5px !important;">
-<span style="font-size: 48;"> &nbsp; &nbsp; http://192.168.10.201/cow.php</span><br />
+<span style="font-size: 48;"> &nbsp; &nbsp; http://workshop.agron.iastate.edu/cow.php</span><br />
 
 <span style="font-size: 30;">Tornado and Severe Thunderstorm</span> 
 
@@ -139,7 +139,8 @@ Ext.onReady(function(){
 </thead>
 <tbody>
 <?php
-while (list($k,$v) = each($results)){
+foreach($results as $k => $v)
+{
   echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td>".
   		"<td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td>".
   		"<td>%02d</td><td>%02d</td></tr>", $k, $v["warnings"], $v["lincoln"],
@@ -171,7 +172,8 @@ while (list($k,$v) = each($results)){
 </thead>
 <tbody>
 <?php
-while (list($k,$v) = each($tor_results)){
+foreach($tor_results as $k => $v)
+{
   echo sprintf("<tr><td>%s</td><td>%02d</td><td>%05.2f</td><td>%04.2f</td>".
   		"<td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td>".
   		"<td>%02d</td><td>%02d</td></tr>", $k, $v["warnings"], $v["lincoln"],
