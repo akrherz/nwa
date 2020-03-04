@@ -1,10 +1,18 @@
-MT417 Timing
+NWA Timing
+=====
+
+| Workshop UTC | Event UTC |
+| ----- | ---- |
+|  26 Mar 2020 1900 | 18 Nov 2017 2100 |
+|  26 Mar 2020 2030 | 19 Nov 2017 0000 |
+
+LSX Workshop
 ------------
 
 | Workshop UTC | Event UTC |
 | ----- | ---- |
-|  11 Apr 2019 1930 | 24 May 2011 2000 |
-|  11 Apr 2019 2100 | 24 May 2011 2300 |
+|  5 Mar 2020 2120 | 6 Aug 2017 0501 |
+|  5 Mar 2020 2240 | 6 Aug 2017 0741 |
 
 
 National Guard Workshop
@@ -15,7 +23,7 @@ City, IA at 0815, and progress across Iowa to the Des Moines area by 1030,
 then slow the progress in crossing the eastern half of Iowa so that it takes
 about 4 hours to reach the Mississippi River.  This slow-down will allow us
 to develop some flood concerns in the Iowa and Cedar River valleys which
-will trigger additional Guard response. 
+will trigger additional Guard response.
 
 | Workshop UTC | Event UTC |
 | --- | --- |
@@ -23,7 +31,7 @@ will trigger additional Guard response.
 | 23 Apr 2018 2100 | 29 Jun 1998 2030 |
 
 nwa
-===
+---
 
 This repository contains code used to drive the annual Central Iowa NWA
 RADAR workshop.  Here are some notes on the setup and usage of this
@@ -47,7 +55,7 @@ of data to match a predefined mesh period.
 This NEXRAD displaced place and time script modifies the header in the Archive
 Level II format to effectively move the file in space in time.  One tricky
 aspect of this moving is that the cases are often speed up, so for example,
-6 hours of wall clock time are replayed in 3 hours of workshop time.  This 
+6 hours of wall clock time are replayed in 3 hours of workshop time.  This
 creates one issue of storm motion within Gibson Ridge as with a 2x time speed
 increase implies a 2x ground speed increase with storm motion.
 
@@ -68,7 +76,7 @@ leaders to modify the event comments to match the displaced location reality
 and to remove any hints of rememberable remarks.  These remarks may tip some
 users off to which case it was.
 
-How are Local Storm Reports (LSR)s displaced?
+How are Local Storm Reports (LSR)s displaced
 ---------------------------------------------
 
 The `scripts/shirt_lsrs.py` script queries the IEM's archive for NWS issued

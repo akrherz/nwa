@@ -8,22 +8,29 @@ body {
 
 <body>
 
-<h3>2019 NWA Workshop</h3>
+<h3>2020 LSX Bow Echo Workshop</h3>
 
-<h4>2019 GR2AE 14 day trial Key</h4>
+<h4>WarnGen Warning Server Setting:</h4>
 
-<pre>000028-HDNW16-Q0RWQ5-NDA6PJ-01UCD5-YJ2XP3-68NFD9-BCQAC3-8TX2MQ-RHDBER-Q6TJND</pre>
+<pre>http://workshop.agron.iastate.edu/</pre>
 
 <h4>GR2AE Polling Site</h4>
 
-<pre>http://192.168.10.201/l2data/</pre>
+<pre>http://workshop.agron.iastate.edu/l2data/</pre>
 
 <h4>GR2AE Placefile for LSRs</h4>
 
-<pre>http://192.168.10.201/lsr.php</pre>
+<pre>http://workshop.agron.iastate.edu/lsr.php</pre>
+
+<h4>GR2AE Placefile for LSX CWA</h4>
+
+<pre>http://workshop.agron.iastate.edu/files/lsx_cwa.txt</pre>
+
+<h4>GR2AE Placefile for LSX CWA (shaded)</h4>
+
+<pre>http://workshop.agron.iastate.edu/files/lsx_cwa_shaded.txt</pre>
+
 
 <h4><a href="tables">GR2AE Color Tables</a></h4>
-
-<h4><a href="WarnGENv1.5.3_Setup.exe">WarnGENv1.5.3_Setup.exe</a></h4>
 
 </body>

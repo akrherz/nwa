@@ -58,7 +58,7 @@ Refresh: 1
 	WHERE  expire > now() and issue < now()
     and team != 'THE_WEATHER_BUREAU'");
 }
-for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
+for ($i=0;$row=pg_fetch_array($rs);$i++)
 {
   $meat = str_replace("MULTIPOLYGON(((", "", $row["t"]);
   $meat = str_replace(")))", "", $meat);
@@ -71,11 +71,11 @@ for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
   if ($grversion >= 1.5 && ! isset($_REQUEST["bureau"])){
   	echo sprintf("TimeRange: %s %s\n", $row["iso_issue"], $row["iso_expire"]);
   }
-  while(list($q,$seg) = each($segments))
+  foreach($segments as $q => $seg)
   {
     echo "Line: 3, 0, ". $row["team"] ."\n";
     $tokens = explode(",", $seg);
-    while (list($p,$s) = each($tokens)){
+    foreach($tokens as $p => $s){
       $t = explode(" ", $s);
       echo sprintf("  %.5f,%.5f", $t[1], $t[0]) ."\n";
     }
