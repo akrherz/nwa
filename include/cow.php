@@ -23,6 +23,7 @@ function __construct($dbconn){
     $this->hailsize = 0.75;      /* Hail size limitation */
     $this->tecount = 0;
     $this->lsrbuffer = 15;       /* LSR report buffer in km */
+    $this->forecastWFO = "DMX";  // Which office are we forecasting for
 }
 
 /* Standard Workflow */
@@ -43,6 +44,9 @@ function callDB($sql){
     return $rs;
 }
 
+function setForecastWFO($wfo){
+    $this->forecastWFO = $wfo;
+}
 function setLSRBuffer($buffer){
     $this->lsrbuffer = $buffer;
 }
@@ -355,13 +359,13 @@ function loadLSRs() {
     $sql = sprintf("SELECT distinct *, ST_x(geom) as lon0, ST_y(geom) as lat0, 
         ST_astext(geom) as tgeom,
         ST_astext(ST_buffer( ST_transform(geom,2163), %s000)) as buffered
-        from lsrs w WHERE wfo = 'DMX' and
+        from lsrs w WHERE wfo = '%s' and
         valid >= '%s' and valid < '%s' and %s and
         ((type = 'M' and magnitude >= 34) or 
          (type = 'H' and magnitude >= %s) or type = 'W' or
          type = 'T' or (type = 'G' and magnitude >= 58) or type = 'D'
          or type = 'F')
-        ORDER by valid ASC", $this->lsrbuffer, 
+        ORDER by valid ASC", $this->lsrbuffer, $this->forecastWFO,
         date("Y/m/d H:i", $this->sts), date("Y/m/d H:i", $this->ets), 
         $this->sqlLSRTypeBuilder(), $this->hailsize);
     $rs = $this->callDB($sql);
@@ -417,8 +421,8 @@ function sbwVerify() {
          or type = 'F')
          and valid >= '%s' and valid <= '%s' and valid < '%s'
          ORDER by valid ASC", 
-         $v["geom"], $v["geom"], $this->sqlLSRTypeBuilder(), 
-         $v["wfo"], $this->hailsize,
+         $v["geom"], $v["geom"], $this->sqlLSRTypeBuilder(),
+         $this->forecastWFO, $this->hailsize,
          date("Y/m/d H:i", strtotime($v["issue"])),
          date("Y/m/d H:i", strtotime($v["expire"])),
          date("Y/m/d H:i", $this->ets));
