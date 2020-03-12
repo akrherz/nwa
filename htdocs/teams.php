@@ -3,17 +3,17 @@
 <meta http-equiv="refresh" content="15">
 </head>
 <body>
-<h3>Teams With [Number of Valid Warnings] since 19z</h3>
+<h3>Teams With [Number of Valid Warnings] since 2130z</h3>
 <?php
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
 echo "<table border='1' cellpadding='6' cellspacing='0'>";
 $rs = pg_query($conn, "SELECT team, count(*) from nwa_warnings "
-		."where issue >= '2019-03-28 19:00+00' and obs is not null ".
-		" and issue < '2019-03-29 20:30+00' ".
+		."where issue >= '2020-03-05 21:30+00' and obs is not null ".
+		" and issue < '2020-03-05 22:50+00' ".
 		" GROUP by team ORDER by team ASC");
 $total = 0;
-for ($i=0;$row= @pg_fetch_array($rs,$i);$i++)
+for ($i=0;$row = pg_fetch_array($rs);$i++)
 {
 	$total += $row["count"];
    if ($i % 3 == 0){ echo "<tr>"; }

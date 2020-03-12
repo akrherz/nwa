@@ -6,30 +6,6 @@ NWA Timing
 |  26 Mar 2020 1900 | 18 Nov 2017 2100 |
 |  26 Mar 2020 2030 | 19 Nov 2017 0000 |
 
-LSX Workshop
-------------
-
-| Workshop UTC | Event UTC |
-| ----- | ---- |
-|  5 Mar 2020 2120 | 6 Aug 2017 0501 |
-|  5 Mar 2020 2240 | 6 Aug 2017 0741 |
-
-
-National Guard Workshop
------------------------
-
-We'd like to have the severe wind event (Derecho of June 29, 1998) hit Sioux
-City, IA at 0815, and progress across Iowa to the Des Moines area by 1030,
-then slow the progress in crossing the eastern half of Iowa so that it takes
-about 4 hours to reach the Mississippi River.  This slow-down will allow us
-to develop some flood concerns in the Iowa and Cedar River valleys which
-will trigger additional Guard response.
-
-| Workshop UTC | Event UTC |
-| --- | --- |
-| 23 Apr 2018 1300 | 29 Jun 1998 1600 |
-| 23 Apr 2018 2100 | 29 Jun 1998 2030 |
-
 nwa
 ---
 
@@ -111,4 +87,3 @@ not to complain about loosing DNS or web access, but it also allows students to
 check Facebook, etc during the event.  This gateway laptop though often gets
 blocked by the hotel's network for excessive bandwidth / suspicious activity.
 For recent years, this functionality was dropped.
-
