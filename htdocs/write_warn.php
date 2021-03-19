@@ -6,9 +6,12 @@
 date_default_timezone_set('America/Chicago');
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
-$rs = pg_prepare($conn, "INSERT", "INSERT into nwa_warnings(team, eventid,
-      issue, expire, geom, phenomena, wfo, gtype, emergency, obs) VALUES 
-      ($1, $2, $3, $4, $5, $6, 'DMX', 'P', $7, $8)");
+$rs = pg_prepare(
+    $conn,
+    "INSERT",
+    "INSERT into nwa_warnings(team, eventid, ".
+    "issue, expire, geom, phenomena, wfo, gtype, emergency, obs, ibwtag) ".
+    "VALUES ($1, $2, $3, $4, $5, $6, 'DMX', 'P', $7, $8, $9)");
 $rs = pg_prepare($conn, "DELETE", "DELETE from nwa_warnings
 		WHERE issue = $1 and team = $2 and eventid = $3");
 $data = isset($_REQUEST["obs"]) ? $_REQUEST["obs"] : die("APIFAIL");
@@ -37,9 +40,12 @@ if (pg_affected_rows($rs) > 0){
 	error_log("Deleted warning for $siteID $warnID");
 }
 
-pg_execute($conn, "INSERT", array($siteID, $warnID, date("Y-m-d H:i", $sts),
-          date("Y-m-d H:i", $ets), $geom, $warnType, 
-		($tokens[2] == 'TOR_EM') ? 't': 'f', $data));
+pg_execute(
+    $conn,
+    "INSERT",
+    array($siteID, $warnID, date("Y-m-d H:i", $sts),
+    date("Y-m-d H:i", $ets), $geom, $warnType, 
+	($tokens[2] == 'TOR_EM') ? 't': 'f', $data, $tokens[19]));
 
 error_log("Wrote warning for $siteID $warnID");
 ?>

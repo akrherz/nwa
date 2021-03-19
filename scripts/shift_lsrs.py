@@ -18,11 +18,11 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2017, 8, 6, 5, 1)
-RT_T0 = util.utc(2020, 3, 5, 21, 30)  # 3:00 PM
+ARCHIVE_T0 = util.utc(2017, 11, 18, 21, 20)
+RT_T0 = util.utc(2021, 3, 25, 21, 15)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2017, 8, 6, 7, 41)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=80)
+ARCHIVE_T1 = util.utc(2017, 11, 18, 23, 14)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=76)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print("Speedup is %.2f" % (SPEEDUP,))

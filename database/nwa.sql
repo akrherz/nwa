@@ -42,6 +42,7 @@ CREATE TABLE nwa_warnings (
     geom geometry,
     emergency boolean,
     team character varying,
+    ibwtag text,
     CONSTRAINT enforce_dims_geom CHECK ((st_ndims(geom) = 2)),
     CONSTRAINT enforce_geotype_geom CHECK (((geometrytype(geom) = 'MULTIPOLYGON'::text) OR (geom IS NULL))),
     CONSTRAINT enforce_srid_geom CHECK ((st_srid(geom) = 4326))

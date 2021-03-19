@@ -1,10 +1,12 @@
 NWA Timing
 =====
 
-| Workshop UTC | Event UTC |
-| ----- | ---- |
-|  26 Mar 2020 1900 | 18 Nov 2017 2100 |
-|  26 Mar 2020 2030 | 19 Nov 2017 0000 |
+Workshop UTC | Event UTC | Test Run
+----- | ---- | ---
+25 Mar 2021 2115 | 18 Nov 2017 2120 | 19 Mar 2021 1530
+25 Mar 2021 2231 | 18 Nov 2017 2314 | 19 Mar 2021 1646
+
+- [ ] placefile for the initial team warnings for others to see
 
 nwa
 ---

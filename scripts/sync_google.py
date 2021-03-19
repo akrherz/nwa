@@ -3,10 +3,19 @@ import datetime
 
 import psycopg2
 import pytz
-from pyiem.util import exponential_backoff
+from pyiem.util import exponential_backoff, utc
 import pyiem.cscap_utils as util
 
-SHEET = "1MWAtuxcR2vXPK6ecIml2PmzK3Rx8y3WP58yjFix8yeE"
+# First mesh point
+ARCHIVE_T0 = utc(2017, 11, 18, 21, 20)
+RT_T0 = utc(2021, 3, 25, 21, 15)
+# Second mesh point
+ARCHIVE_T1 = utc(2017, 11, 18, 23, 14)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=76)
+SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
+print("Speedup is %.2f" % (SPEEDUP,))
+
+SHEET = "1_0OV8ecFk1IJIjqFlt5-OBi7khSOD6gccxqUPRbs9gg"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -36,11 +45,7 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute(
-        """
-        DELETE from lsrs where date(valid) = '2020-03-05'
-    """
-    )
+    mcursor.execute("DELETE from lsrs where date(valid) = '2021-03-05'")
     print("Deleted %s rows" % (mcursor.rowcount,))
 
     # Get me a client, stat
@@ -55,8 +60,19 @@ def main():
     for row in grid["rowData"][1:]:
         vals = [a.get("formattedValue") for a in row["values"]]
         data = dict(zip(cols, vals))
-        if data["Workshop UTC"] is None:
+        if data.get("Type") is None:
             continue
+        """
+        ts = convtime(data["Obs Time (UTC)"])
+        ts = ts.replace(tzinfo=pytz.UTC)
+        offset = (
+            (ts - ARCHIVE_T0).days * 86400.0 + (ts - ARCHIVE_T0).seconds
+        ) / SPEEDUP  # Speed up!
+        valid = RT_T0 + datetime.timedelta(seconds=offset)
+        print(valid.strftime("%m/%d/%Y %H:%M:00"))
+        continue
+        """
+
         ts = convtime(data["Workshop UTC"])
         ts = ts.replace(tzinfo=pytz.UTC)
         if data["Workshop Reveal UTC"] is None:

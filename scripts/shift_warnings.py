@@ -5,6 +5,7 @@ from __future__ import print_function
 import datetime
 
 import psycopg2.extras
+from pandas.io.sql import read_sql
 from pyiem.util import get_dbconn, utc
 from pyiem.network import Table as NetworkTable
 
@@ -25,11 +26,11 @@ def main():
     )
     print("Removed %s rows from the nwa_warnings table" % (ncursor.rowcount,))
 
-    orig0 = utc(2017, 7, 10, 1, 0)
-    orig1 = orig0 + datetime.timedelta(minutes=180)
+    orig0 = utc(2017, 11, 18, 21, 20)
+    orig1 = orig0 + datetime.timedelta(minutes=114)
 
-    workshop0 = utc(2019, 3, 28, 19, 0)
-    workshop1 = workshop0 + datetime.timedelta(minutes=90)
+    workshop0 = utc(2021, 3, 19, 15, 30)
+    workshop1 = workshop0 + datetime.timedelta(minutes=76)
 
     speedup = (orig1 - orig0).total_seconds() / (
         workshop1 - workshop0
@@ -39,14 +40,14 @@ def main():
     NEXRAD_LAT = nt.sts["DMX"]["lat"]
     NEXRAD_LON = nt.sts["DMX"]["lon"]
 
-    # Get DMX coords in 26915
+    # Get DMX coords in 2163
     pcursor.execute(
         """
         SELECT
         ST_x( ST_transform(
-            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as x,
+            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as x,
         ST_y( ST_transform(
-            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 26915)) as y
+            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as y
     """,
         (NEXRAD_LON, NEXRAD_LAT, NEXRAD_LON, NEXRAD_LAT),
     )
@@ -55,13 +56,13 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["MPX"]["lat"]
-    NEXRAD_LON = nt.sts["MPX"]["lon"]
+    NEXRAD_LAT = nt.sts["OHX"]["lat"]
+    NEXRAD_LON = nt.sts["OHX"]["lon"]
     tlx_coords = "SRID=4326;POINT(%s %s)" % (NEXRAD_LON, NEXRAD_LAT)
     pcursor.execute(
         """SELECT
-        ST_x( ST_transform( ST_GeomFromEWKT('%s'), 26915)) as x,
-        ST_y( ST_transform( ST_GeomFromEWKT('%s'), 26915)) as y
+        ST_x( ST_transform( ST_GeomFromEWKT('%s'), 2163)) as x,
+        ST_y( ST_transform( ST_GeomFromEWKT('%s'), 2163)) as y
         """
         % (tlx_coords, tlx_coords)
     )
@@ -78,11 +79,12 @@ def main():
     pcursor.execute(
         """
         SELECT *, ST_astext(ST_Transform(ST_Translate(ST_Transform(geom,
-            26915),%s,%s),4236)) as tgeom
+            2163),%s,%s),4236)) as tgeom
         from sbw_%s w
         WHERE expire  > '%s' and issue < '%s' and significance = 'W'
         and phenomena in ('SV','TO') and status = 'NEW'
-        and wfo in ('MPX', 'DLH', 'ARX', 'DMX', 'FSD', 'ABR', 'FGF')
+        and wfo in ('OHX', 'MEG', 'PAH', 'LMK', 'JKL', 'MRX', 'FFC',
+        'HUN', 'JAN')
         ORDER by issue ASC
     """
         % (
@@ -124,26 +126,35 @@ def main():
         ncursor.execute(sql)
 
     # Now cull any warnings that are outside of DMX
-    ncursor.execute(
+    df = read_sql(
         """
-        SELECT u.wfo as ugc_wfo, w.oid, w.wfo, w.phenomena, w.eventid from
+        SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid from
         nwa_warnings w, nws_ugc u
-        WHERE w.issue > 'TODAY' and ST_Contains(u.geom, st_centroid(w.geom))
+        WHERE w.issue > 'TODAY' and ST_Intersects(u.geom, w.geom)
         and w.team = 'THE_WEATHER_BUREAU'
         ORDER by w.wfo, w.eventid ASC
-    """
+    """,
+        NWA,
+        index_col=None,
     )
+    print(f"Found {len(df.index)} warnings to consider culling...")
+    hits = df[df["ugc_wfo"] == "DMX"]
 
     ncursor2 = NWA.cursor()
-    for row in ncursor:
-        if row[0] == "DMX":
+    for _, row in df.iterrows():
+        if row["ugc_wfo"] == "DMX":
             continue
-        print("culling %s %s %s as outside of DMX" % (row[2], row[3], row[4]))
+        if row["ctid"] in hits["ctid"].values:
+            continue
+        print(
+            "culling %s %s %s as outside of DMX"
+            % (row["ugc_wfo"], row["phenomena"], row["eventid"])
+        )
         ncursor2.execute(
             """
-            DELETE from nwa_warnings where oid = %s
+            DELETE from nwa_warnings where ctid = %s
         """,
-            (row[1],),
+            (row["ctid"],),
         )
 
     ncursor.close()
