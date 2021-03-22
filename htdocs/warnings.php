@@ -2,28 +2,27 @@
 $grversion = isset($_GET['version']) ? floatval($_GET["version"]): 1.0;
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 
-header("Content-type: text/plain");
+function compute_color($row){
+    // Figure out the color to be used for plotting, from Washoe 18 Mar 2021
+    if ($row["phenomena"] == "TO"){
+        if ($row["emergency"] == "t"){
+            return "128 0 255";
+        }
+        if ($row["ibwtag"] == "Catastrophic"){
+            return "255 0 255";
+        }
+        return "255 0 0";
+    } elseif ($row["phenomena"] == "SV"){
+        if ($row["ibwtag"] == "Destructive"){
+            return "255 128 0";
+        }
+        return "255 255 0";
+    }
+    return "0 0 0";
+}
 
-$colors = Array(
-   "SV" => "255 255 0",
-   "TO" => "255 0 0",
-    3 => "152 152 152",
-    7 => "152 152 152",
-    11 => "152 152 152",
-    15 => "255 197 197",
-    19 => "254 51 153",
-    23 => "181 0 181",
-    27 => "255 197 197",
-    31 => "254 51 153",
-    35 => "181 0 181",
-    39 => "153 255 255",
-    43 => "0 153 254",
-    47 => "0 0 158",
-    51 => "232 95 1",
-    56 => "255 197 197",
-    60 => "254 51 153",
-    64 => "181 0 181",
-    86 => "125 0 0");
+
+header("Content-type: text/plain");
 
 if (isset($_GET["bureau"])){
 	echo "Threshold: 999
@@ -63,11 +62,7 @@ for ($i=0;$row=pg_fetch_array($rs);$i++)
   $meat = str_replace("MULTIPOLYGON(((", "", $row["t"]);
   $meat = str_replace(")))", "", $meat);
   $segments = explode("),(", $meat);
-  if ($row["emergency"] == 't'){ 
-  	echo "Color: 85	26	139\n";
-  } else{
-  	echo "Color: ".$colors[$row["phenomena"]]  ."\n";
-  }
+  echo "Color: ". compute_color($row)  ."\n";
   if ($grversion >= 1.5 && ! isset($_REQUEST["bureau"])){
   	echo sprintf("TimeRange: %s %s\n", $row["iso_issue"], $row["iso_expire"]);
   }
