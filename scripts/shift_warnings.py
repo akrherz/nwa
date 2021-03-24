@@ -21,16 +21,16 @@ def main():
     ncursor.execute(
         """
         DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and
-        issue > 'TODAY'
+        issue > 'TODAY' and issue < 'TOMORROW'
     """
     )
     print("Removed %s rows from the nwa_warnings table" % (ncursor.rowcount,))
 
-    orig0 = utc(2017, 11, 18, 21, 20)
-    orig1 = orig0 + datetime.timedelta(minutes=114)
+    orig0 = utc(2021, 3, 24, 18, 0)
+    orig1 = orig0 + datetime.timedelta(minutes=600)
 
-    workshop0 = utc(2021, 3, 19, 15, 30)
-    workshop1 = workshop0 + datetime.timedelta(minutes=76)
+    workshop0 = utc(2021, 3, 24, 18, 0)
+    workshop1 = workshop0 + datetime.timedelta(minutes=600)
 
     speedup = (orig1 - orig0).total_seconds() / (
         workshop1 - workshop0
@@ -56,8 +56,8 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["OHX"]["lat"]
-    NEXRAD_LON = nt.sts["OHX"]["lon"]
+    NEXRAD_LAT = nt.sts["FWS"]["lat"]
+    NEXRAD_LON = nt.sts["FWS"]["lon"]
     tlx_coords = "SRID=4326;POINT(%s %s)" % (NEXRAD_LON, NEXRAD_LAT)
     pcursor.execute(
         """SELECT
@@ -83,8 +83,7 @@ def main():
         from sbw_%s w
         WHERE expire  > '%s' and issue < '%s' and significance = 'W'
         and phenomena in ('SV','TO') and status = 'NEW'
-        and wfo in ('OHX', 'MEG', 'PAH', 'LMK', 'JKL', 'MRX', 'FFC',
-        'HUN', 'JAN')
+        and wfo in ('FWD', 'OUN', 'TSA', 'SHV', 'HGX', 'EWX', 'SJT', 'EWX')
         ORDER by issue ASC
     """
         % (
@@ -130,7 +129,8 @@ def main():
         """
         SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid from
         nwa_warnings w, nws_ugc u
-        WHERE w.issue > 'TODAY' and ST_Intersects(u.geom, w.geom)
+        WHERE w.issue > 'TODAY' and w.issue < 'TOMORROW'
+        and ST_Intersects(u.geom, w.geom)
         and w.team = 'THE_WEATHER_BUREAU'
         ORDER by w.wfo, w.eventid ASC
     """,
@@ -151,9 +151,7 @@ def main():
             % (row["ugc_wfo"], row["phenomena"], row["eventid"])
         )
         ncursor2.execute(
-            """
-            DELETE from nwa_warnings where ctid = %s
-        """,
+            "DELETE from nwa_warnings where ctid = %s",
             (row["ctid"],),
         )
 

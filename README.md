@@ -3,8 +3,8 @@ NWA Timing
 
 Workshop UTC | Event UTC | Test Run
 ----- | ---- | ---
-25 Mar 2021 2115 | 18 Nov 2017 2120 | 19 Mar 2021 1530
-25 Mar 2021 2231 | 18 Nov 2017 2314 | 19 Mar 2021 1646
+25 Mar 2021 2015 | 18 Nov 2017 2120 | 19 Mar 2021 1530
+25 Mar 2021 2131 | 18 Nov 2017 2314 | 19 Mar 2021 1646
 
 - [ ] placefile for the initial team warnings for others to see
 

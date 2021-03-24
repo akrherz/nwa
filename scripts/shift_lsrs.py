@@ -1,5 +1,4 @@
 """Need to shift LSRs in space and time"""
-from __future__ import print_function
 import math
 import datetime
 
@@ -18,18 +17,18 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2017, 11, 18, 21, 20)
-RT_T0 = util.utc(2021, 3, 25, 21, 15)
+ARCHIVE_T0 = util.utc(2021, 3, 24, 18, 0)
+RT_T0 = util.utc(2021, 3, 24, 18, 0)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2017, 11, 18, 23, 14)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=76)
+ARCHIVE_T1 = util.utc(2021, 3, 24, 19, 0)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=60)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print("Speedup is %.2f" % (SPEEDUP,))
 
 # Site NEXRAD
-REAL88D = "INX"
-FAKE88D = "LSX"
+REAL88D = "FWS"
+FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
 FAKE_NEXRAD_LAT = nt.sts[FAKE88D]["lat"]
@@ -58,9 +57,7 @@ def getdir(u, v):
 def main():
     """ Go!"""
     ncursor.execute(
-        """
-    DELETE from lsrs WHERE valid > %s and valid < %s
-    """,
+        "DELETE from lsrs WHERE valid > %s and valid < %s",
         (
             RT_T0 - datetime.timedelta(minutes=300),
             RT_T1 + datetime.timedelta(minutes=300),
@@ -176,6 +173,8 @@ def main():
             lat,
         )
         ncursor.execute(sql)
+        print(city)
+        """
         print(
             ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s")
             % (
@@ -191,6 +190,7 @@ def main():
                 row["remark"].replace(",", " "),
             )
         )
+        """
     ncursor.close()
     NWA.commit()
     NWA.close()

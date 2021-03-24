@@ -8,7 +8,7 @@ if (isset($_REQUEST["all"])){
   $rs = pg_query($conn, "SELECT *, ST_x(geom) as lon, ST_y(geom) as lat, ".
   	"to_char((valid + '20 minutes'::interval) at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_end, ".
     "to_char(valid at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_begin ".
-    "from lsrs WHERE valid > '2021-03-19' and valid < '2021-03-20' ".
+    "from lsrs WHERE valid > '2021-03-24' and valid < '2021-03-25' ".
   	"ORDER  by valid ASC ");
   $title = "Local Storm Reports - ALL";
 } else {

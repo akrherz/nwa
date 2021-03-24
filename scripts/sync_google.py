@@ -8,7 +8,7 @@ import pyiem.cscap_utils as util
 
 # First mesh point
 ARCHIVE_T0 = utc(2017, 11, 18, 21, 20)
-RT_T0 = utc(2021, 3, 25, 21, 15)
+RT_T0 = utc(2021, 3, 25, 20, 15)
 # Second mesh point
 ARCHIVE_T1 = utc(2017, 11, 18, 23, 14)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=76)
@@ -61,6 +61,7 @@ def main():
         vals = [a.get("formattedValue") for a in row["values"]]
         data = dict(zip(cols, vals))
         if data.get("Type") is None:
+            print()
             continue
         """
         ts = convtime(data["Obs Time (UTC)"])
@@ -72,7 +73,6 @@ def main():
         print(valid.strftime("%m/%d/%Y %H:%M:00"))
         continue
         """
-
         ts = convtime(data["Workshop UTC"])
         ts = ts.replace(tzinfo=pytz.UTC)
         if data["Workshop Reveal UTC"] is None:
