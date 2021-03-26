@@ -1,0 +1,26 @@
+;
+; Default GRS ZDR color table
+; Developed by Aaron Johnson SOO/NWS Dodge City
+; modifiedy by Rod Donavon NWS Des Moines
+;
+
+Product: ZDR
+Units:   DB
+Step:    1.0
+
+Color4:   8.00    25  25  25  255       ;0   0   0
+Color4:   6.50    75  75  75  255       ;0   0   0
+color4:   5.00   242 120 181  255     100  50  50  255 
+Color4:   4.00   176   1   1  255     
+Color4:   3.00   220  10   5  255     
+Color4:   2.50   255 147  71  255     
+color4:   2.00   244 249  98  255     
+color4:   1.50    90 221  98  255     
+Color4:   1.00    66 242 212  255     
+Color4:   0.50    35 144 208  255     
+color4:   0.25    12   8 155  255     
+color4:   0.00   142 121 181  255     
+Color4:  -0.50   198 198 198  255     
+Color4:  -2.00   150 150 150  255     
+color4:  -4.00    61  61  61  255     
+color4:  -6.00     0   0   0  255     

@@ -1,0 +1,27 @@
+;
+; WDTB OB9 Velocity (SRV) color table
+; Modified by Rod Donavon NWS Des Moines, IA 2011
+
+Product: SRV
+Units: KTS
+Step:  5
+Scale:   1.9426
+; converts internal units (M/S) to KTS
+
+RF:  100  0  100
+
+Color4:  125   100    0    0  255
+Color4:   80   255  135    0  255 
+Color4:   60   255  255  255  255
+Color4:   40   255    0    0  255 
+Color4:   10   110    0    0  255
+Color4:    2   140  115  125  255  
+Color4:    0   100  100  100  255
+Color4:   -2   105  130  105  255   
+Color4:  -10     0  100    0  255
+Color4:  -40     0  255    0  255
+Color4:  -50   175  240  240  255
+Color4:  -60    50  230  230  255
+Color4:  -80    20    0  150  255
+Color4: -125   255    0  210  255
+

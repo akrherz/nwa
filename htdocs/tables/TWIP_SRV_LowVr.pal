@@ -1,0 +1,19 @@
+;
+; Default GR2Analyst Storm Relative Velocity color table
+; Developed by Pat Spoden NWS PAH
+;
+
+Product: SRV
+Units:   KTS
+Step:    5
+Scale:   1.9426     ; converts internal units (M/S) to KTS
+
+RF:  100  0  100
+
+Color4:  125   255 130   0  255
+Color4:   25   255 255   0  255   255 130   0  255
+Color4:    0    96   0   0  255   255   0   0  255
+Color4:  -25     0 255   0  255     0  96   0  255
+Color4:  -90     0   0 255  255     0 175 255  255
+Color4: -125     0   0 100  255     0   0 255  255
+

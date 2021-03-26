@@ -1,0 +1,28 @@
+;
+; WDTB OB9 Velocity (SRV) color table
+; Developed by Rod Donavon NWS Des Moines
+; Similar to TWIP_SRV_Alt with brighter colors for Low Vr events
+
+Product: SRV
+Units: KTS
+Step:  5
+Scale:   1.9426
+; converts internal units (M/S) to KTS
+
+RF:  100  0  100
+
+Color4:  125   100    0    0  255
+Color4:   70   255  135    0  255
+Color4:   45   255  255  255  255
+Color4:   22   255    0    0  255
+Color4:    6   110    0    0  255
+Color4:    2   140  115  125  255  
+Color4:    0   100  100  100  255
+Color4:   -2   105  130  105  255   
+Color4:   -6     0  100    0  255
+Color4:  -22     0  255    0  255
+Color4:  -45   175  240  240  255
+Color4:  -55    50  230  230  255
+Color4:  -70    20    0  150  255
+Color4: -125   255    0  210  255
+
