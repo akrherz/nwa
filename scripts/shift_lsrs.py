@@ -17,17 +17,17 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2021, 3, 24, 18, 0)
-RT_T0 = util.utc(2021, 3, 24, 18, 0)
+ARCHIVE_T0 = util.utc(2021, 3, 25, 19, 0)
+RT_T0 = util.utc(2021, 3, 25, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2021, 3, 24, 19, 0)
+ARCHIVE_T1 = util.utc(2021, 3, 25, 20, 0)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=60)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print("Speedup is %.2f" % (SPEEDUP,))
 
 # Site NEXRAD
-REAL88D = "FWS"
+REAL88D = "GWX"
 FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
@@ -68,6 +68,8 @@ def main():
     # Get Fake coords in 2163
     radx, rady = T_4326_2163.transform(FAKE_NEXRAD_LON, FAKE_NEXRAD_LAT)
 
+    sts = ARCHIVE_T0 - datetime.timedelta(minutes=300)
+    ets = ARCHIVE_T1 + datetime.timedelta(minutes=300)
     # Get all LSRs within 230m of the nexrad
     pcursor.execute(
         """SELECT *, ST_astext(geom) as tgeom,
@@ -87,16 +89,13 @@ def main():
             NEXRAD_LAT,
             NEXRAD_LON,
             NEXRAD_LAT,
-            (ARCHIVE_T0 - datetime.timedelta(minutes=120)).strftime(
-                "%Y-%m-%d %H:%M+00"
-            ),
-            (ARCHIVE_T1 + datetime.timedelta(minutes=120)).strftime(
-                "%Y-%m-%d %H:%M+00"
-            ),
+            sts.strftime("%Y-%m-%d %H:%M+00"),
+            ets.strftime("%Y-%m-%d %H:%M+00"),
             NEXRAD_LON,
             NEXRAD_LAT,
         )
     )
+    print("Found %s Lsrs between %s and %s" % (pcursor.rowcount, sts, ets))
 
     for row in pcursor:
         locx = radx + row["offset_x"]
@@ -130,6 +129,7 @@ def main():
             (ts - ARCHIVE_T0).days * 86400.0 + (ts - ARCHIVE_T0).seconds
         ) / SPEEDUP  # Speed up!
         valid = RT_T0 + datetime.timedelta(seconds=offset)
+        print(f"{ts} -> {valid}")
 
         # Query for WFO
         sql = """
@@ -155,9 +155,10 @@ def main():
 
         sql = """
         INSERT into lsrs(valid, type, magnitude, city, county, state,
-        source, remark, wfo, typetext, geom) values ('%s', '%s', %s, '%s',
+        source, remark, wfo, typetext, geom, display_valid)
+        values ('%s', '%s', %s, '%s',
         '%s', '%s', '%s', '%s', '%s', '%s',
-        ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'))
+        ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), '%s')
         """ % (
             valid.strftime("%Y-%m-%d %H:%M+00"),
             row["type"],
@@ -166,11 +167,12 @@ def main():
             cnty.replace("'", ""),
             st,
             row["source"],
-            row["remark"].replace("'", ""),
+            "" if row["remark"] is None else row["remark"].replace("'", ""),
             wfo,
             row["typetext"],
             lon,
             lat,
+            valid.strftime("%Y-%m-%d %H:%M+00"),
         )
         ncursor.execute(sql)
         print(city)
