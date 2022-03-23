@@ -1,5 +1,4 @@
-"""Fake the realtime delivery of near realtime data!
-"""
+"""Fake the realtime delivery of near realtime data!"""
 import os
 import time
 import sys
@@ -23,7 +22,7 @@ def loop():
     )
     req = requests.get(f"{baseurl}dir.list")
     if req.status_code != 200:
-        raise Exception("Reponse status_code of %s", req.status_code)
+        raise Exception(f"Reponse status_code of {req.status_code}")
     lines = req.text.strip().split("\n")
     # Look at the last 5 lines skipping the last one
     for line in lines[-6:]:
@@ -36,8 +35,7 @@ def loop():
         with open(newfn, "wb") as fh:
             fh.write(req.content)
         os.system(
-            "ls -ln %s* | awk '{print $5 \" \" $9}' > dir.list"
-            % (FAKE_NEXRAD,)
+            f"ls -ln {FAKE_NEXRAD}* | awk '{{print $5 \" \" $9}}' > dir.list"
         )
 
 

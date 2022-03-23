@@ -1,7 +1,6 @@
 """
  Shift warnings around
 """
-from __future__ import print_function
 import datetime
 
 import psycopg2.extras
@@ -24,7 +23,7 @@ def main():
         issue > 'TODAY' and issue < 'TOMORROW'
     """
     )
-    print("Removed %s rows from the nwa_warnings table" % (ncursor.rowcount,))
+    print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
     orig0 = utc(2021, 3, 24, 18, 0)
     orig1 = orig0 + datetime.timedelta(minutes=600)

@@ -8,7 +8,7 @@ body {
 
 <body>
 
-<h3>2020 LSX Bow Echo Workshop</h3>
+<h3>2022 Central Iowa NWA Workshop</h3>
 
 <h4>WarnGen Warning Server Setting:</h4>
 

@@ -24,7 +24,7 @@ ARCHIVE_T1 = util.utc(2021, 3, 25, 20, 0)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=60)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
-print("Speedup is %.2f" % (SPEEDUP,))
+print(f"Speedup is {SPEEDUP:.2f}")
 
 # Site NEXRAD
 REAL88D = "GWX"
@@ -176,7 +176,6 @@ def main():
         )
         ncursor.execute(sql)
         print(city)
-        """
         print(
             ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s")
             % (
@@ -192,7 +191,6 @@ def main():
                 row["remark"].replace(",", " "),
             )
         )
-        """
     ncursor.close()
     NWA.commit()
     NWA.close()

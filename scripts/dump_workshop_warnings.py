@@ -11,19 +11,10 @@ A helpful data point here is to know the exact periods of the workshops!
     2012-03-29 19:10 - 20:40
 
 """
-from __future__ import print_function
 import sys
 
-from geopandas import read_postgis
-from pyiem.util import utc, get_dbconn
-
-
-def read_example():
-    """An example"""
-    import geopandas as gpd
-
-    df = gpd.read_file("workshop2018.shp")
-    print(df["team"].unique())
+import geopandas as gpd
+from pyiem.util import utc, get_sqlalchemy_conn
 
 
 def main(argv):
@@ -34,26 +25,25 @@ def main(argv):
     ets = utc(
         int(argv[1]), int(argv[2]), int(argv[3]), int(argv[6]), int(argv[7])
     )
-    pgconn = get_dbconn("nwa")
-    df = read_postgis(
-        """
-        SELECT
-        to_char(issue at time zone 'UTC',
-                'YYYY-MM-DDThh24:MI:SSZ') as utc_issue,
-        to_char(expire at time zone 'UTC',
-                'YYYY-MM-DDThh24:MI:SSZ') as utc_expire, geom,
-        case when emergency then 'T' else 'F' end as emergency, team
-        from nwa_warnings
-        WHERE issue >= %s and issue < %s
-    """,
-        pgconn,
-        params=(sts, ets),
-        geom_col="geom",
-    )
-    df.to_file("workshop%s.shp" % (sts.year,))
-    print("Wrote %s records to shapefile" % (len(df.index),))
+    with get_sqlalchemy_conn("nwa") as conn:
+        df = gpd.read_postgis(
+            """
+            SELECT
+            to_char(issue at time zone 'UTC',
+                    'YYYY-MM-DDThh24:MI:SSZ') as utc_issue,
+            to_char(expire at time zone 'UTC',
+                    'YYYY-MM-DDThh24:MI:SSZ') as utc_expire, geom,
+            case when emergency then 'T' else 'F' end as emergency, team
+            from nwa_warnings
+            WHERE issue >= %s and issue < %s
+        """,
+            conn,
+            params=(sts, ets),
+            geom_col="geom",
+        )
+    df.to_file(f"workshop{sts.year}.shp")
+    print(f"Wrote {len(df.index)} records to shapefile")
 
 
 if __name__ == "__main__":
     main(sys.argv)
-    # read_example()

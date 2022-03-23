@@ -8,10 +8,10 @@ import pyiem.cscap_utils as util
 
 # First mesh point
 ARCHIVE_T0 = utc(2017, 11, 18, 21, 20)
-RT_T0 = utc(2021, 3, 25, 20, 15)
+RT_T0 = utc(2022, 3, 23, 17, 58)
 # Second mesh point
-ARCHIVE_T1 = utc(2017, 11, 18, 23, 14)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=76)
+ARCHIVE_T1 = utc(2017, 11, 18, 23, 17)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print("Speedup is %.2f" % (SPEEDUP,))
 
@@ -45,7 +45,7 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2021-03-05'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2022-03-23'")
     print("Deleted %s rows" % (mcursor.rowcount,))
 
     # Get me a client, stat
@@ -63,36 +63,31 @@ def main():
         if data.get("Type") is None:
             print()
             continue
-        """
         ts = convtime(data["Obs Time (UTC)"])
         ts = ts.replace(tzinfo=pytz.UTC)
-        offset = (
-            (ts - ARCHIVE_T0).days * 86400.0 + (ts - ARCHIVE_T0).seconds
-        ) / SPEEDUP  # Speed up!
+        offset = (ts - ARCHIVE_T0).total_seconds() / SPEEDUP
         valid = RT_T0 + datetime.timedelta(seconds=offset)
-        print(valid.strftime("%m/%d/%Y %H:%M:00"))
-        continue
-        """
-        ts = convtime(data["Workshop UTC"])
-        ts = ts.replace(tzinfo=pytz.UTC)
-        if data["Workshop Reveal UTC"] is None:
-            revealts = ts
-        else:
-            revealts = convtime(data["Workshop Reveal UTC"])
-            revealts = revealts.replace(tzinfo=pytz.UTC)
-        if ts != revealts:
-            print(
-                ("  Entry has reveal delta of %s minutes")
-                % ((revealts - ts).total_seconds() / 60.0,)
-            )
+        print(f"{valid:%Y-%m-%d %H:%M}")
+        # ts = convtime(data["Workshop UTC"])
+        # ts = ts.replace(tzinfo=pytz.UTC)
+        # if data["Workshop Reveal UTC"] is None:
+        #   revealts = ts
+        # else:
+        #    revealts = convtime(data["Workshop Reveal UTC"])
+        #    revealts = revealts.replace(tzinfo=pytz.UTC)
+        # if ts != revealts:
+        #    print(
+        #        ("  Entry has reveal delta of %s minutes")
+        #        % ((revealts - ts).total_seconds() / 60.0,)
+        #    )
         geo = "SRID=4326;POINT(%s %s)" % (data["LON"], data["LAT"])
         sql = """
         INSERT into lsrs (valid, display_valid, type, magnitude, city, source,
         remark, typetext, geom, wfo) values (%s, %s, %s, %s, %s, %s,
         %s, %s, %s, 'DMX')"""
         args = (
-            ts,
-            revealts,
+            valid,
+            valid,
             LKP[data["Type"]],
             0 if data["Magnitude"] == "None" else data["Magnitude"],
             data["Workshop City"],

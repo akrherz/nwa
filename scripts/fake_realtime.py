@@ -1,5 +1,4 @@
-"""Fake the realtime delivery of archived Level II products
-"""
+"""Fake the realtime delivery of archived Level II products."""
 import subprocess
 import datetime
 import glob
@@ -17,15 +16,15 @@ if len(NEXRAD) != 4:
 MYDIR = sys.argv[2]
 
 orig0 = datetime.datetime(2017, 11, 18, 21, 20).replace(tzinfo=pytz.UTC)
-orig1 = orig0 + datetime.timedelta(minutes=114)
+orig1 = orig0 + datetime.timedelta(minutes=117)
 
-workshop0 = datetime.datetime(2021, 3, 24, 15, 0).replace(tzinfo=pytz.UTC)
-workshop1 = workshop0 + datetime.timedelta(minutes=76)
+workshop0 = datetime.datetime(2022, 3, 23, 17, 58).replace(tzinfo=pytz.UTC)
+workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (
     workshop1 - workshop0
 ).total_seconds()
-print("Overall Speedup is %.4f" % (speedup,))
+print(f"Overall Speedup is {speedup:.4f}")
 
 
 def warp(radts):
@@ -37,21 +36,16 @@ def warp(radts):
 
 def doit(fp, ts):
     """Do some work please"""
-    cmd = ("../l2munger %s %s %.0f %s") % (
-        NEXRAD,
-        ts.strftime("%Y/%m/%d %H:%M:%S"),
-        speedup,
-        fp,
-    )
+    cmd = f"../l2munger {NEXRAD} {ts:%Y/%m/%d %H:%M:%S} {speedup:.0f} {fp}"
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     proc.stdout.read()
-    fp = "%s%s" % (NEXRAD, ts.strftime("%Y%m%d_%H%M%S"))
-    os.system("compress %s" % (fp,))
-    os.rename("%s.Z" % (fp,), "../../htdocs/l2data/%s/%s.Z" % (NEXRAD, fp))
-    os.chdir("../../htdocs/l2data/%s/" % (NEXRAD,))
+    fp = f"{NEXRAD}{ts:%Y%m%d_%H%M%S}"
+    os.system(f"compress {fp}")
+    os.rename(f"{fp}.Z", f"../../htdocs/l2data/{NEXRAD}/{fp}.Z")
+    os.chdir(f"../../htdocs/l2data/{NEXRAD}/")
     # prevent brittle string splitting.
-    os.system("ls -ln %s* | awk '{print $5 \" \" $9}' > dir.list" % (NEXRAD,))
-    os.chdir("../../../scripts/" + MYDIR)
+    os.system(f"ls -ln {NEXRAD}* | awk '{{print $5 \" \" $9}}' > dir.list")
+    os.chdir(f"../../../scripts/{MYDIR}")
 
 
 def main():
@@ -67,11 +61,7 @@ def main():
         ts = datetime.datetime.strptime(fn[4:19], "%Y%m%d_%H%M%S")
         ts = ts.replace(tzinfo=pytz.utc)
         fakets = warp(ts)
-        desc = "%s->%s %s" % (
-            fn,
-            ts.strftime("%Y%m%d%H%M"),
-            fakets.strftime("%Y-%m-%d %H:%M"),
-        )
+        desc = f"{fn}->{ts:%Y%m%d%H%M} {fakets:%Y-%m-%d %H:%M}"
         progress.set_description(desc)
         utcnow = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
         if fakets > utcnow:
