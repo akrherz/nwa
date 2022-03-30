@@ -16,7 +16,7 @@ body {
 
 <h4>GR2AE Polling Site</h4>
 
-<pre>http://workshop.agron.iastate.edu/l2data/</pre>
+<pre>http://workshop.agron.iastate.edu/level2/</pre>
 
 <h4>GR2AE Placefile for LSRs</h4>
 

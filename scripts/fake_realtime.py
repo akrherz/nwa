@@ -41,8 +41,8 @@ def doit(fp, ts):
     proc.stdout.read()
     fp = f"{NEXRAD}{ts:%Y%m%d_%H%M%S}"
     os.system(f"compress {fp}")
-    os.rename(f"{fp}.Z", f"../../htdocs/l2data/{NEXRAD}/{fp}.Z")
-    os.chdir(f"../../htdocs/l2data/{NEXRAD}/")
+    os.rename(f"{fp}.Z", f"../../htdocs/level2/{NEXRAD}/{fp}.Z")
+    os.chdir(f"../../htdocs/level2/{NEXRAD}/")
     # prevent brittle string splitting.
     os.system(f"ls -ln {NEXRAD}* | awk '{{print $5 \" \" $9}}' > dir.list")
     os.chdir(f"../../../scripts/{MYDIR}")

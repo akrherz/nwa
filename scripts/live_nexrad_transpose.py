@@ -12,7 +12,7 @@ if len(REAL_NEXRAD) != 4 or len(FAKE_NEXRAD) != 4:
     print("ERROR NEXRAD should be 4 char")
     sys.exit()
 
-os.chdir(f"../htdocs/l2data/{FAKE_NEXRAD}")
+os.chdir(f"../htdocs/level2/{FAKE_NEXRAD}")
 
 
 def loop():
