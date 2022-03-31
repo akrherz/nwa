@@ -33,7 +33,7 @@ Refresh: 1
 	to_char(issue at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_issue,
 	to_char(expire at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_expire
  	from nwa_warnings
-	WHERE expire > now() and issue < now() and team = 'THE_WEATHER_BUREAU'");
+	WHERE expire > now() and team = 'THE_WEATHER_BUREAU'");
 } else if (isset($_GET["tor"])){
   echo "Threshold: 999
   Title: All TOR Warnings
@@ -78,5 +78,3 @@ for ($i=0;$row=pg_fetch_array($rs);$i++)
   }
 
 }
-
-?>

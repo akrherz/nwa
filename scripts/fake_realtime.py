@@ -18,7 +18,7 @@ MYDIR = sys.argv[2]
 orig0 = datetime.datetime(2017, 11, 18, 21, 20).replace(tzinfo=pytz.UTC)
 orig1 = orig0 + datetime.timedelta(minutes=117)
 
-workshop0 = datetime.datetime(2022, 3, 23, 17, 58).replace(tzinfo=pytz.UTC)
+workshop0 = datetime.datetime(2022, 3, 31, 18, 58).replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (
@@ -28,7 +28,7 @@ print(f"Overall Speedup is {speedup:.4f}")
 
 
 def warp(radts):
-    """ Convert the LSR Time to our workshop time, of some sort"""
+    """Convert the LSR Time to our workshop time, of some sort"""
     return workshop0 + datetime.timedelta(
         seconds=((radts - orig0).total_seconds() / speedup)
     )
