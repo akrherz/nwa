@@ -12,18 +12,18 @@ STS = utc(2022, 3, 31, 19, 0)
 ETS = utc(2022, 3, 31, 20, 30)
 PATH = "/opt/nwa/htdocs/icons"
 ZOOM = 0.6
-ICONS = {
-    "D": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
-    "G": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
-    "L": OffsetImage(plt.imread(f"{PATH}/lightning.gif"), zoom=ZOOM),
-    "N": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
-    "O": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
-    "T": OffsetImage(plt.imread(f"{PATH}/tornado.png"), zoom=ZOOM - 0.2),
-}
 
 
 def application(environ, start_response):
     """mod_wsgi handler."""
+    ICONS = {
+        "D": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
+        "G": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
+        "L": OffsetImage(plt.imread(f"{PATH}/lightning.gif"), zoom=ZOOM),
+        "N": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
+        "O": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
+        "T": OffsetImage(plt.imread(f"{PATH}/tornado.png"), zoom=ZOOM - 0.2),
+    }
     form = parse_formvars(environ)
     team = form.get("team", "THE_WEATHER_BUREAU")
 
@@ -36,6 +36,7 @@ def application(environ, start_response):
             conn,
             geom_col="geom",
             params=(STS, ETS, team),
+            crs="EPSG:4326",
         )
         lsrdf = gpd.read_postgis(
             "SELECT geom, "
@@ -86,5 +87,6 @@ def application(environ, start_response):
 
     bio = BytesIO()
     mp.fig.savefig(bio, format="png")
+    mp.close()
     start_response("200 OK", [("Content-type", "image/png")])
     return [bio.getvalue()]
