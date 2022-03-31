@@ -1,0 +1,33 @@
+;
+; 
+; Developed by Rod Donavon NWS Des Moines, IA 2020
+;
+
+Product: SRV
+Units: KTS
+Step:  5
+Scale: 1.9426
+
+RF:  100  0  100
+
+Color4:  125    45    0    0  255
+Color4:   65   210  190    0  255
+Color4:   55   255  255    0  255    
+Color4:   38   255  106    5  255   
+Color4:   25   255    0    0  255
+Color4:   10    86    0    0  255
+Color4:    4   114   55   55  255  
+Color4:    0   150  150  150  255
+Color4:   -2    75  115   75  255
+Color4:   -6    70  120   70  255   
+Color4:  -10    12   62   36  255
+Color4:  -28     0  255    0  255
+;Color4:  -38    35  210  130  255
+Color4:  -38   200  200  200  255
+;Color4:  -35    35  210  130  255
+;Color4:  -40   100  240  240  255  
+Color4:  -50     0   70  255  255  
+;Color4:  -65   100    0  210  255
+Color4:  -65   110   27  196  255
+Color4:  -80   255    0  210  255  ;was -125
+Color4: -125   255  200  255  255

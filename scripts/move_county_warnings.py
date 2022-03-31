@@ -1,11 +1,10 @@
 """ Convert old county warnings into simple polygons """
-import psycopg2
 import datetime
+
+import psycopg2
 import pytz
 
-iempgconn = psycopg2.connect(
-    database="postgis", host="localhost", port=5555, user="nobody"
-)
+iempgconn = psycopg2.connect("postgis")
 iemcursor = iempgconn.cursor()
 
 pgconn = psycopg2.connect(database="nwa")
@@ -15,7 +14,7 @@ cursor.execute(
     """DELETE from nwa_warnings where issue > '2016-03-31'
  and team = 'THE_WEATHER_BUREAU'"""
 )
-print ("removed %s entries" % (cursor.rowcount,))
+print("removed %s entries" % (cursor.rowcount,))
 
 # ______________________________________________________________________
 # Upstream is sync_google!
@@ -33,15 +32,15 @@ workshop1 = workshop0.replace(hour=19, minute=50)
 speedup = (orig1 - orig0).total_seconds() / (
     workshop1 - workshop0
 ).total_seconds()
-print "Overall Speedup is %.4f" % (speedup,)
+print("Overall Speedup is %.4f" % (speedup,))
 speedup1 = (origB - orig0).total_seconds() / (
     workshopB1 - workshop0
 ).total_seconds()
-print "Par1    Speedup is %.4f" % (speedup1,)
+print("Par1    Speedup is %.4f" % (speedup1,))
 speedup2 = (orig1 - origB).total_seconds() / (
     workshop1 - workshopB2
 ).total_seconds()
-print "Part2   Speedup is %.4f" % (speedup2,)
+print("Part2   Speedup is %.4f" % (speedup2,))
 
 
 def warp(lsrtime):

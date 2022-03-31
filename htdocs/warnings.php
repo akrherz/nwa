@@ -78,5 +78,3 @@ for ($i=0;$row=pg_fetch_array($rs);$i++)
   }
 
 }
-
-?>

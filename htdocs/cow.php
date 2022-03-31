@@ -6,8 +6,10 @@ require_once "../include/cow.php";
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
-$rs = pg_query($conn, "SELECT distinct team from nwa_warnings 
-		WHERE issue >= '2020-03-05 21:30' and team != 'THE_WEATHER_BUREA2U'");
+$rs = pg_query(
+    $conn,
+    "SELECT distinct team from nwa_warnings WHERE ".
+    "issue >= '2022-03-31 19:00+00' and team != 'THE_WEATHER_BUREA2U'");
 $results = Array();
 $tor_results = Array();
 //$results["KICT ACTUAL"] = Array(
@@ -24,8 +26,8 @@ for($i=0;$row=pg_fetch_array($rs);$i++)
 {
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setForecastWFO("LSX");
-  $cow->setLimitTime( mktime(21,30,0,3,5,2020), mktime(22,35,0,3,5,2020) ); //!UTC
+  $cow->setForecastWFO("DMX");
+  $cow->setLimitTime( mktime(19,0,0,3,31,2022), mktime(22,30,0,3,31,2022) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
@@ -46,7 +48,7 @@ for($i=0;$row=pg_fetch_array($rs);$i++)
 
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(21,30,0,3,5,2020), mktime(22,35,0,3,5,2020) ); //!UTC
+  $cow->setLimitTime( mktime(19,0,0,3,31,2022), mktime(22,30,0,3,31,2022) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('TO') );
   $cow->setLimitLSRType( Array('TO') );
@@ -118,7 +120,7 @@ Ext.onReady(function(){
 
 </head>
 <body style="margin: 5px !important;">
-<span style="font-size: 48;"> &nbsp; &nbsp; http://workshop.agron.iastate.edu/cow.php</span><br />
+<span style="font-size: 48;"> &nbsp; &nbsp; http://192.168.10.201/cow.php</span><br />
 
 <span style="font-size: 30;">Tornado and Severe Thunderstorm</span> 
 
