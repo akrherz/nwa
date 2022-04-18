@@ -15,10 +15,10 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2017, 11, 18, 21, 20).replace(tzinfo=pytz.UTC)
-orig1 = orig0 + datetime.timedelta(minutes=117)
+orig0 = datetime.datetime(2021, 5, 2, 22, 30).replace(tzinfo=pytz.UTC)
+orig1 = orig0 + datetime.timedelta(minutes=135)
 
-workshop0 = datetime.datetime(2022, 3, 31, 18, 58).replace(tzinfo=pytz.UTC)
+workshop0 = datetime.datetime(2022, 4, 21, 19, 30).replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (
@@ -66,7 +66,7 @@ def main():
         utcnow = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
         if fakets > utcnow:
             secs = int((fakets - utcnow).seconds)
-            time.sleep(secs)
+            # time.sleep(secs)
         left -= 1
         doit(fn, fakets)
 

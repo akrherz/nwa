@@ -17,17 +17,17 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2021, 3, 25, 19, 0)
-RT_T0 = util.utc(2021, 3, 25, 19, 0)
+ARCHIVE_T0 = util.utc(2021, 5, 2, 22, 30)
+RT_T0 = util.utc(2022, 4, 21, 19, 30)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2021, 3, 25, 20, 0)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=60)
+ARCHIVE_T1 = util.utc(2021, 5, 3, 0, 45)
+RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
 # Site NEXRAD
-REAL88D = "GWX"
+REAL88D = "DGX"
 FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
@@ -54,8 +54,8 @@ def getdir(u, v):
     return int(math.fabs(ddir))
 
 
-def main():
-    """ Go!"""
+def main(csvfp):
+    """Go!"""
     ncursor.execute(
         "DELETE from lsrs WHERE valid > %s and valid < %s",
         (
@@ -63,7 +63,7 @@ def main():
             RT_T1 + datetime.timedelta(minutes=300),
         ),
     )
-    print("Removed %s rows from nwa lsr table" % (ncursor.rowcount,))
+    print(f"Removed {ncursor.rowcount} rows from nwa lsr table")
 
     # Get Fake coords in 2163
     radx, rady = T_4326_2163.transform(FAKE_NEXRAD_LON, FAKE_NEXRAD_LAT)
@@ -79,48 +79,50 @@ def main():
         ST_y( ST_transform( geom, 2163) ) -
             ST_y( ST_transform(
                 ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_y
-        from lsrs WHERE valid BETWEEN '%s' and '%s'
+        from lsrs WHERE valid BETWEEN %s and %s
         and ST_distance( ST_transform(geom, 2163),
             ST_transform( ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163))
         < (230.0 / 0.6214 * 1000.0)
-    """
-        % (
+    """,
+        (
             NEXRAD_LON,
             NEXRAD_LAT,
             NEXRAD_LON,
             NEXRAD_LAT,
-            sts.strftime("%Y-%m-%d %H:%M+00"),
-            ets.strftime("%Y-%m-%d %H:%M+00"),
+            sts,
+            ets,
             NEXRAD_LON,
             NEXRAD_LAT,
-        )
+        ),
     )
-    print("Found %s Lsrs between %s and %s" % (pcursor.rowcount, sts, ets))
+    print(f"Found {pcursor.rowcount} Lsrs between {sts} and {ets}")
 
     for row in pcursor:
         locx = radx + row["offset_x"]
         locy = rady + row["offset_y"]
         lon, lat = T_2163_4326.transform(locx, locy)
         # Locate nearest city and distance, hmm
-        sql = """
+        ncursor.execute(
+            """
             SELECT name, ST_distance(ST_transform(geom, 2163),
             ST_GeomFromEWKT('SRID=2163;POINT(%s %s)')) as d,
             %s - ST_x(ST_transform(geom,2163)) as offsetx,
             %s - ST_y(ST_transform(geom,2163)) as offsety
             from cities
             ORDER by d ASC LIMIT 1
-        """ % (
-            locx,
-            locy,
-            locx,
-            locy,
+        """,
+            (
+                locx,
+                locy,
+                locx,
+                locy,
+            ),
         )
-        ncursor.execute(sql)
         row2 = ncursor.fetchone()
         deg = getdir(0 - row2["offsetx"], 0 - row2["offsety"])
         drct = util.drct2text(deg)
         miles = row2["d"] * 0.0006214  # meters -> miles
-        newcity = "%.1f %s %s" % (miles, drct, row2["name"])
+        newcity = f"{miles:.1f} {drct} {row2['name']}"
         city = row["city"] if REAL88D == FAKE88D else newcity
 
         # Compute the new valid time
@@ -132,18 +134,20 @@ def main():
         print(f"{ts} -> {valid}")
 
         # Query for WFO
-        sql = """
+        ncursor.execute(
+            """
         SELECT * from nws_ugc WHERE
    ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326) && geom
    and ST_Contains(geom,
            ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326))
-        """ % (
-            locx,
-            locy,
-            locx,
-            locy,
+        """,
+            (
+                locx,
+                locy,
+                locx,
+                locy,
+            ),
         )
-        ncursor.execute(sql)
         row2 = ncursor.fetchone()
         wfo = row["wfo"] if FAKE88D == REAL88D else row2["wfo"]
         cnty = row["county"] if FAKE88D == REAL88D else row2["name"]
@@ -176,8 +180,10 @@ def main():
         )
         ncursor.execute(sql)
         print(city)
-        print(
-            ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s")
+        if wfo != "DMX":
+            continue
+        csvfp.write(
+            ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s\n")
             % (
                 ts.strftime("%Y-%m-%d %H:%M"),
                 valid.strftime("%Y-%m-%d %H:%M"),
@@ -188,7 +194,9 @@ def main():
                 row["source"],
                 city,
                 row["city"],
-                row["remark"].replace(",", " "),
+                ("" if row["remark"] is None else row["remark"]).replace(
+                    ",", " "
+                ),
             )
         )
     ncursor.close()
@@ -197,4 +205,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with open("/tmp/lsrs.csv", "w", encoding="utf-8") as _fp:
+        main(_fp)
+    print("Look at /tmp/lsrs.csv")
