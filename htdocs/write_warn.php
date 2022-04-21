@@ -40,12 +40,15 @@ if (pg_affected_rows($rs) > 0){
 	error_log("Deleted warning for $siteID $warnID");
 }
 
+// sub-optimal
+$cip = isset($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["HTTP_X_FORWARDED_FOR"] : $_SERVER["REMOTE_ADDR"];
+
 pg_execute(
     $conn,
     "INSERT",
-    array($siteID, $warnID, date("Y-m-d H:i", $sts),
-    date("Y-m-d H:i", $ets), $geom, $warnType, 
-	($tokens[2] == 'TOR_EM') ? 't': 'f', $data, $tokens[19],
-    $_SERVER["REMOTE_ADDR"]));
-
-error_log("Wrote warning for $siteID $warnID");
+    array(
+        $siteID, $warnID, date("Y-m-d H:i", $sts),
+        date("Y-m-d H:i", $ets), $geom, $warnType, 
+	    ($tokens[2] == 'TOR_EM') ? 't': 'f', $data, $tokens[19],
+        $cip),
+);

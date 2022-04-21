@@ -66,7 +66,7 @@ def main():
         utcnow = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
         if fakets > utcnow:
             secs = int((fakets - utcnow).seconds)
-            # time.sleep(secs)
+            time.sleep(secs)
         left -= 1
         doit(fn, fakets)
 
