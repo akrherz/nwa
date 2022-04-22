@@ -8,8 +8,8 @@ from pyiem.util import get_sqlalchemy_conn, utc
 from pyiem.plot.use_agg import plt
 from pyiem.plot import MapPlot
 
-STS = utc(2022, 3, 31, 19, 0)
-ETS = utc(2022, 3, 31, 20, 30)
+STS = utc(2022, 4, 21, 19, 30)
+ETS = utc(2022, 4, 21, 21, 0)
 PATH = "/opt/nwa/htdocs/icons"
 ZOOM = 0.6
 
@@ -55,14 +55,14 @@ def application(environ, start_response):
         figsize=(8, 8),
         sector="cwa",
         continentalcolor="tan",
-        caption="Central Iowa NWA RADAR Workshop",
-        title=f"{team} Warnings for 2022 Central Iowa NWA Workshop",
+        caption="ISU MT417 Workshop",
+        title=f"{team} Warnings for 2022 MT417 Workshop",
         subtitle=(
             f"{len(warndf.index)} Warnings, {len(lsrdf.index)} LSRs "
             f"between {STS:%H%M}Z and {ETS:%H%M}Z"
         ),
         cwa="DMX",
-        logo="nwa",
+        # logo="nwa",
     )
     mp.draw_cwas()
     mp.drawcounties()

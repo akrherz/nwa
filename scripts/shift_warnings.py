@@ -23,10 +23,10 @@ def main():
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
-    orig0 = utc(2017, 11, 18, 21, 20)
-    orig1 = utc(2017, 11, 18, 23, 17)
+    orig0 = utc(2021, 5, 2, 22, 30)
+    orig1 = orig0 + datetime.timedelta(minutes=135)
 
-    workshop0 = utc(2022, 3, 31, 18, 58)
+    workshop0 = utc(2022, 4, 21, 19, 30)
     workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
     speedup = (orig1 - orig0).total_seconds() / (
@@ -53,8 +53,8 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["OHX"]["lat"]
-    NEXRAD_LON = nt.sts["OHX"]["lon"]
+    NEXRAD_LAT = nt.sts["DGX"]["lat"]
+    NEXRAD_LON = nt.sts["DGX"]["lon"]
     tlx_coords = f"SRID=4326;POINT({NEXRAD_LON} {NEXRAD_LAT})"
     pcursor.execute(
         """SELECT
@@ -157,9 +157,9 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2022-03-31 19:00+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2022-03-31 19:00+00' and "
-        "expire > '2022-03-31 19:00+00'"
+        "UPDATE nwa_warnings SET issue = '2022-04-21 19:30+00' WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < '2022-04-21 19:30+00' and "
+        "expire > '2022-04-21 19:30+00'"
     )
     print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2022 HACK")
 

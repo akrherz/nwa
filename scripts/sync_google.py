@@ -7,15 +7,15 @@ from pyiem.util import exponential_backoff, utc
 import pyiem.cscap_utils as util
 
 # First mesh point
-ARCHIVE_T0 = utc(2017, 11, 18, 21, 20)
-RT_T0 = utc(2022, 3, 31, 18, 58)
+ARCHIVE_T0 = utc(2021, 5, 2, 22, 30)
+RT_T0 = utc(2022, 4, 21, 19, 30)
 # Second mesh point
-ARCHIVE_T1 = utc(2017, 11, 18, 23, 17)
+ARCHIVE_T1 = utc(2021, 5, 3, 0, 45)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
-SHEET = "1_0OV8ecFk1IJIjqFlt5-OBi7khSOD6gccxqUPRbs9gg"
+SHEET = "11hO6xo1GA1T5sGNfTtpohf2fzim3qBgwsAvVTPZzLuA"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -45,7 +45,7 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2022-03-31'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2022-04-21'")
     print(f"Deleted {mcursor.rowcount} rows")
 
     # Get me a client, stat

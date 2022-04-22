@@ -9,7 +9,7 @@ pg_query($conn, "SET TIME ZONE 'UTC'");
 $rs = pg_query(
     $conn,
     "SELECT distinct team from nwa_warnings WHERE ".
-    "issue >= '2022-03-31 19:00+00' and team != 'THE_WEATHER_BUREA2U'");
+    "issue >= '2022-04-21 19:30+00' and team != 'THE_WEATHER_BUREA2U'");
 $results = Array();
 $tor_results = Array();
 //$results["KICT ACTUAL"] = Array(
@@ -27,7 +27,7 @@ for($i=0;$row=pg_fetch_array($rs);$i++)
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
   $cow->setForecastWFO("DMX");
-  $cow->setLimitTime( mktime(19,0,0,3,31,2022), mktime(22,30,0,3,31,2022) ); //!UTC
+  $cow->setLimitTime( mktime(19,30,0,4,21,2022), mktime(21,0,0,4,21,2022) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('SV','TO') );
   $cow->setLimitLSRType( Array('SV','TO') );
@@ -48,7 +48,7 @@ for($i=0;$row=pg_fetch_array($rs);$i++)
 
   $cow = new cow($conn);
   $cow->setLimitWFO( Array($row["team"]) );
-  $cow->setLimitTime( mktime(19,0,0,3,31,2022), mktime(22,30,0,3,31,2022) ); //!UTC
+  $cow->setLimitTime( mktime(19,30,0,4,21,2022), mktime(22,0,0,4,21,2022) ); //!UTC
   $cow->setHailSize( 1 );
   $cow->setLimitType( Array('TO') );
   $cow->setLimitLSRType( Array('TO') );
