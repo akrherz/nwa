@@ -44,7 +44,7 @@ print("Part2   Speedup is %.4f" % (speedup2,))
 
 
 def warp(lsrtime):
-    """ Convert the LSR Time to our workshop time, of some sort"""
+    """Convert the LSR Time to our workshop time, of some sort"""
     base = orig0 if lsrtime < origB else origB
     newbase = workshop0 if lsrtime < origB else workshopB2
     _speedup = speedup1 if lsrtime < origB else speedup2
