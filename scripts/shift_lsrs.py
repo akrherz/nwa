@@ -1,6 +1,6 @@
 """Need to shift LSRs in space and time"""
 import math
-import datetime
+from datetime import timezone, timedelta
 
 import psycopg2.extras
 from pyiem import util
@@ -17,17 +17,17 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2021, 5, 2, 22, 30)
-RT_T0 = util.utc(2022, 4, 21, 19, 30)
+ARCHIVE_T0 = util.utc(2013, 5, 20, 19, 12)
+RT_T0 = util.utc(2023, 3, 23, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2021, 5, 3, 0, 45)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
+ARCHIVE_T1 = util.utc(2013, 5, 20, 21, 24)
+RT_T1 = RT_T0 + timedelta(minutes=90)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
 # Site NEXRAD
-REAL88D = "DGX"
+REAL88D = "TLX"
 FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
@@ -59,8 +59,8 @@ def main(csvfp):
     ncursor.execute(
         "DELETE from lsrs WHERE valid > %s and valid < %s",
         (
-            RT_T0 - datetime.timedelta(minutes=300),
-            RT_T1 + datetime.timedelta(minutes=300),
+            RT_T0 - timedelta(minutes=300),
+            RT_T1 + timedelta(minutes=300),
         ),
     )
     print(f"Removed {ncursor.rowcount} rows from nwa lsr table")
@@ -68,8 +68,8 @@ def main(csvfp):
     # Get Fake coords in 2163
     radx, rady = T_4326_2163.transform(FAKE_NEXRAD_LON, FAKE_NEXRAD_LAT)
 
-    sts = ARCHIVE_T0 - datetime.timedelta(minutes=300)
-    ets = ARCHIVE_T1 + datetime.timedelta(minutes=300)
+    sts = ARCHIVE_T0 - timedelta(minutes=300)
+    ets = ARCHIVE_T1 + timedelta(minutes=300)
     # Get all LSRs within 230m of the nexrad
     pcursor.execute(
         """SELECT *, ST_astext(geom) as tgeom,
@@ -130,7 +130,7 @@ def main(csvfp):
         offset = (
             (ts - ARCHIVE_T0).days * 86400.0 + (ts - ARCHIVE_T0).seconds
         ) / SPEEDUP  # Speed up!
-        valid = RT_T0 + datetime.timedelta(seconds=offset)
+        valid = RT_T0 + timedelta(seconds=offset)
         print(f"{ts} -> {valid}")
 
         # Query for WFO
@@ -183,9 +183,10 @@ def main(csvfp):
         if wfo != "DMX":
             continue
         csvfp.write(
-            ("%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s\n")
+            ("%s,%s,%s,%.3f,%.3f,%s,%s,%s,%s,%s,%s\n")
             % (
                 ts.strftime("%Y-%m-%d %H:%M"),
+                f"{(ts.astimezone(timezone.utc)):%Y-%m-%d %H:%M}",
                 valid.strftime("%Y-%m-%d %H:%M"),
                 lon,
                 lat,

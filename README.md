@@ -3,8 +3,8 @@ NWA Timing
 
 Workshop UTC | KDGX Event UTC
 ----- | ---- | ---
-21 Apr 2022 1930 | 2 May 2021 2230
-21 Apr 2022 2100 | 3 May 2021 0045
+23 Mar 2023 1900 | 20 May 2013 1912
+23 Mar 2023 2030 | 20 May 2013 2124
 
 nwa
 ---
