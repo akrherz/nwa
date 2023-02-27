@@ -54,7 +54,7 @@ def getdir(u, v):
     return int(math.fabs(ddir))
 
 
-def main(csvfp):
+def workflow(csvfp):
     """Go!"""
     ncursor.execute(
         "DELETE from lsrs WHERE valid > %s and valid < %s",
@@ -72,7 +72,7 @@ def main(csvfp):
     ets = ARCHIVE_T1 + timedelta(minutes=300)
     # Get all LSRs within 230m of the nexrad
     pcursor.execute(
-        """SELECT *, ST_astext(geom) as tgeom,
+        """SELECT distinct *, ST_astext(geom) as tgeom,
         ST_x( ST_transform( geom, 2163) ) -
             ST_x( ST_transform(
                 ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_x,
@@ -179,7 +179,6 @@ def main(csvfp):
             valid.strftime("%Y-%m-%d %H:%M+00"),
         )
         ncursor.execute(sql)
-        print(city)
         if wfo != "DMX":
             continue
         csvfp.write(
@@ -205,7 +204,12 @@ def main(csvfp):
     NWA.close()
 
 
-if __name__ == "__main__":
-    with open("/tmp/lsrs.csv", "w", encoding="utf-8") as _fp:
-        main(_fp)
+def main():
+    """Go main Go."""
+    with open("/tmp/lsrs.csv", "w", encoding="utf-8") as fp:
+        workflow(fp)
     print("Look at /tmp/lsrs.csv")
+
+
+if __name__ == "__main__":
+    main()
