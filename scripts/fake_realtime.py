@@ -15,10 +15,10 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2021, 5, 2, 22, 30).replace(tzinfo=pytz.UTC)
-orig1 = orig0 + datetime.timedelta(minutes=135)
+orig0 = datetime.datetime(2013, 5, 20, 19, 12).replace(tzinfo=pytz.UTC)
+orig1 = orig0 + datetime.timedelta(minutes=134)
 
-workshop0 = datetime.datetime(2022, 4, 21, 19, 30).replace(tzinfo=pytz.UTC)
+workshop0 = datetime.datetime(2023, 3, 10, 16, 30).replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (
@@ -37,10 +37,10 @@ def warp(radts):
 def doit(fp, ts):
     """Do some work please"""
     cmd = f"../l2munger {NEXRAD} {ts:%Y/%m/%d %H:%M:%S} {speedup:.0f} {fp}"
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    proc.stdout.read()
+    with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE) as proc:
+        proc.stdout.read()
     fp = f"{NEXRAD}{ts:%Y%m%d_%H%M%S}"
-    os.system(f"compress {fp}")
+    subprocess.call(["gzip", "-S", ".Z", fp])
     os.rename(f"{fp}.Z", f"../../htdocs/level2/{NEXRAD}/{fp}.Z")
     os.chdir(f"../../htdocs/level2/{NEXRAD}/")
     # prevent brittle string splitting.

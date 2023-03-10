@@ -14,7 +14,7 @@ def main():
     nt = NetworkTable("NEXRAD")
     POSTGIS = get_dbconn("postgis")
     pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    NWA = psycopg2.connect(database="nwa")
+    NWA = get_dbconn("nwa", host="localhost")
     ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     ncursor.execute(
@@ -23,10 +23,10 @@ def main():
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
-    orig0 = utc(2021, 5, 2, 22, 30)
-    orig1 = orig0 + datetime.timedelta(minutes=135)
+    orig0 = utc(2013, 5, 20, 19, 12)
+    orig1 = orig0 + datetime.timedelta(minutes=134)
 
-    workshop0 = utc(2022, 4, 21, 19, 30)
+    workshop0 = utc(2023, 3, 10, 16, 30)
     workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
     speedup = (orig1 - orig0).total_seconds() / (
@@ -53,8 +53,8 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["DGX"]["lat"]
-    NEXRAD_LON = nt.sts["DGX"]["lon"]
+    NEXRAD_LAT = nt.sts["TLX"]["lat"]
+    NEXRAD_LON = nt.sts["TLX"]["lon"]
     tlx_coords = f"SRID=4326;POINT({NEXRAD_LON} {NEXRAD_LAT})"
     pcursor.execute(
         """SELECT
@@ -157,11 +157,11 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2022-04-21 19:30+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2022-04-21 19:30+00' and "
-        "expire > '2022-04-21 19:30+00'"
+        "UPDATE nwa_warnings SET issue = '2023-03-10 16:30+00' WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < '2023-03-10 16:30+00' and "
+        "expire > '2023-03-10 16:30+00'"
     )
-    print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2022 HACK")
+    print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2023 HACK")
 
     ncursor2.close()
     NWA.commit()
