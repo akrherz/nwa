@@ -8,8 +8,8 @@ from pyiem.util import get_sqlalchemy_conn, utc
 from pyiem.plot.use_agg import plt
 from pyiem.plot import MapPlot
 
-STS = utc(2022, 4, 21, 19, 30)
-ETS = utc(2022, 4, 21, 21, 0)
+STS = utc(2023, 3, 23, 19, 30)
+ETS = utc(2023, 3, 23, 21, 0)
 PATH = "/opt/nwa/htdocs/icons"
 ZOOM = 0.6
 
@@ -19,6 +19,7 @@ def application(environ, start_response):
     ICONS = {
         "D": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
         "G": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
+        "H": OffsetImage(plt.imread(f"{PATH}/hail.png"), zoom=ZOOM),
         "L": OffsetImage(plt.imread(f"{PATH}/lightning.gif"), zoom=ZOOM),
         "N": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
         "O": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
@@ -55,14 +56,14 @@ def application(environ, start_response):
         figsize=(8, 8),
         sector="cwa",
         continentalcolor="tan",
-        caption="ISU MT417 Workshop",
-        title=f"{team} Warnings for 2022 MT417 Workshop",
+        caption="2023 NWA Workshop",
+        title=f"{team} Warnings for 2023 NWA Workshop",
         subtitle=(
             f"{len(warndf.index)} Warnings, {len(lsrdf.index)} LSRs "
             f"between {STS:%H%M}Z and {ETS:%H%M}Z"
         ),
         cwa="DMX",
-        # logo="nwa",
+        logo="nwa",
     )
     mp.draw_cwas()
     mp.drawcounties()

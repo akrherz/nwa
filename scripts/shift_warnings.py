@@ -26,7 +26,7 @@ def main():
     orig0 = utc(2013, 5, 20, 19, 12)
     orig1 = orig0 + datetime.timedelta(minutes=134)
 
-    workshop0 = utc(2023, 3, 10, 16, 30)
+    workshop0 = utc(2023, 3, 23, 19, 30)
     workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
     speedup = (orig1 - orig0).total_seconds() / (
@@ -157,9 +157,9 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2023-03-10 16:30+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2023-03-10 16:30+00' and "
-        "expire > '2023-03-10 16:30+00'"
+        "UPDATE nwa_warnings SET issue = '2023-03-23 19:00+00' WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < '2023-03-23 19:00+00' and "
+        "expire > '2023-03-23 19:00+00'"
     )
     print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2023 HACK")
 

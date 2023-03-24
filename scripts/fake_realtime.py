@@ -18,7 +18,7 @@ MYDIR = sys.argv[2]
 orig0 = datetime.datetime(2013, 5, 20, 19, 12).replace(tzinfo=pytz.UTC)
 orig1 = orig0 + datetime.timedelta(minutes=134)
 
-workshop0 = datetime.datetime(2023, 3, 10, 16, 30).replace(tzinfo=pytz.UTC)
+workshop0 = datetime.datetime(2023, 3, 23, 19, 0).replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (
