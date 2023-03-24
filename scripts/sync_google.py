@@ -3,19 +3,19 @@ import datetime
 
 import psycopg2
 import pytz
-from pyiem.util import exponential_backoff, utc
-import pyiem.cscap_utils as util
+from pyiem.util import utc
+import isudatateam.cscap_utils as util
 
 # First mesh point
-ARCHIVE_T0 = utc(2021, 5, 2, 22, 30)
-RT_T0 = utc(2022, 4, 21, 19, 30)
+ARCHIVE_T0 = utc(2013, 5, 20, 19, 12)
+RT_T0 = utc(2023, 3, 23, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = utc(2021, 5, 3, 0, 45)
+ARCHIVE_T1 = utc(2013, 5, 20, 21, 24)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
-SHEET = "11hO6xo1GA1T5sGNfTtpohf2fzim3qBgwsAvVTPZzLuA"
+SHEET = "1DtSfbMVfbzAolU86yv_ARU_wTZiiJRWAaGEiOknRsA4"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -45,17 +45,20 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2022-04-21'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2023-03-23'")
     print(f"Deleted {mcursor.rowcount} rows")
 
     # Get me a client, stat
     config = util.get_config()
     sheets = util.get_sheetsclient(config, "workshop")
-    f = sheets.spreadsheets().get(spreadsheetId=SHEET, includeGridData=True)
-    j = exponential_backoff(f.execute)
+    sheet = (
+        sheets.spreadsheets()
+        .get(spreadsheetId=SHEET, includeGridData=True)
+        .execute()
+    )
 
     inserts = 0
-    grid = j["sheets"][0]["data"][0]
+    grid = sheet["sheets"][0]["data"][0]
     cols = [a.get("formattedValue", "") for a in grid["rowData"][0]["values"]]
     for row in grid["rowData"][1:]:
         vals = [a.get("formattedValue") for a in row["values"]]
@@ -63,21 +66,22 @@ def main():
         if data.get("Type") is None:
             print()
             continue
-        # ts = convtime(data["Obs Time (UTC)"])
-        # ts = ts.replace(tzinfo=pytz.UTC)
+        # if data["Obs Time (UTC)"] is None:
+        #    continue
+        # ts = convtime(data["Workshop (UTC)"]).replace(tzinfo=pytz.UTC)
         # offset = (ts - ARCHIVE_T0).total_seconds() / SPEEDUP
         # valid = RT_T0 + datetime.timedelta(seconds=offset)
         # print(f"{valid:%Y-%m-%d %H:%M}")
         valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
-        display_valid = convtime(data["Workshop Reveal UTC"]).replace(
-            tzinfo=pytz.UTC
-        )
+        # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
+        #    tzinfo=pytz.UTC
+        # )
         # ts = ts.replace(tzinfo=pytz.UTC)
-        # if data["Workshop Reveal UTC"] is None:
-        #   revealts = ts
-        # else:
-        #    revealts = convtime(data["Workshop Reveal UTC"])
-        #    revealts = revealts.replace(tzinfo=pytz.UTC)
+        if data["Workshop Reveal UTC"] is None:
+            revealts = valid
+        else:
+            revealts = convtime(data["Workshop Reveal UTC"])
+            revealts = revealts.replace(tzinfo=pytz.UTC)
         # if ts != revealts:
         #    print(
         #        ("  Entry has reveal delta of %s minutes")
@@ -89,7 +93,7 @@ def main():
         %s, %s, 'SRID=4326;POINT(%s %s)', 'DMX')"""
         args = (
             valid,
-            display_valid,
+            revealts,
             LKP[data["Type"]],
             0 if data["Magnitude"] == "None" else data["Magnitude"],
             data["Workshop City"],

@@ -9,33 +9,33 @@ body {
 
 <body>
 
-<h3>2022 Meteorology 417 Workshop</h3>
+<h3>GR Key</h3>
 
-<p><a href="teams.php">Teams List with Summary Graphics</a></p>
+<code>00002G-FJTU15-5P91GP-AM3XF7-ZAHYTF-1GG6WP-1XKV8C-1W7RZV-B0WE6T-XB994T-0TJE7G</code>
 
+<h3>2023 NWA Workshop</h3>
+
+<ul>
+    <li><a href="teams.php">Teams List with Summary Graphics</a></li>
+    <li><a href="tables">GR2AE Color Tables</a></li>
+    <li><a href="mesoanalysis/">mesoanalysis</a></li>
+</ul>
 
 <h4>WarnGen Warning Server Setting:</h4>
 
-<pre>http://workshop.agron.iastate.edu/</pre>
+<pre>http://192.168.10.201/</pre>
 
 <h4>GR2AE Polling Site</h4>
 
-<pre>http://workshop.agron.iastate.edu/level2/</pre>
+<pre>http://192.168.10.201/level2/</pre>
 
 <h4>GR2AE Placefile for LSRs</h4>
 
-<pre>http://workshop.agron.iastate.edu/lsr.php</pre>
+<pre>http://192.168.10.201/lsr.php</pre>
 
 <h4>GR2AE Placefile for DMX CWA</h4>
 
-<pre>http://workshop.agron.iastate.edu/files/DMX_cwa.txt</pre>
-
-<h4>GR2AE Placefile for DMX CWA (shaded)</h4>
-
-<pre>http://workshop.agron.iastate.edu/files/DMX_cwa_shaded.txt</pre>
-
-
-<h4><a href="tables">GR2AE Color Tables</a></h4>
+<pre>http://192.168.10.201/files/dmx_cwa.txt</pre>
 
 </body>
 </html>
