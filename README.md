@@ -1,10 +1,10 @@
-NWA Timing
-=====
+MT417 Timing
+============
 
 Workshop UTC | KDGX Event UTC
------ | ---- | ---
-23 Mar 2023 1900 | 20 May 2013 1912
-23 Mar 2023 2030 | 20 May 2013 2124
+----- | ----
+20 Apr 2023 1930 | 2 May 2021 2230
+20 Apr 2023 2100 | 3 May 2021 0045
 
 nwa
 ---

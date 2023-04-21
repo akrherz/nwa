@@ -13,7 +13,7 @@ body {
 
 <code>00002G-FJTU15-5P91GP-AM3XF7-ZAHYTF-1GG6WP-1XKV8C-1W7RZV-B0WE6T-XB994T-0TJE7G</code>
 
-<h3>2023 NWA Workshop</h3>
+<h3>2023 MT417 Workshop</h3>
 
 <ul>
     <li><a href="teams.php">Teams List with Summary Graphics</a></li>
@@ -23,19 +23,19 @@ body {
 
 <h4>WarnGen Warning Server Setting:</h4>
 
-<pre>http://192.168.10.201/</pre>
+<pre>https://workshop.agron.iastate.edu/</pre>
 
 <h4>GR2AE Polling Site</h4>
 
-<pre>http://192.168.10.201/level2/</pre>
+<pre>https://workshop.agron.iastate.edu/level2/</pre>
 
 <h4>GR2AE Placefile for LSRs</h4>
 
-<pre>http://192.168.10.201/lsr.php</pre>
+<pre>https://workshop.agron.iastate.edu/lsr.php</pre>
 
 <h4>GR2AE Placefile for DMX CWA</h4>
 
-<pre>http://192.168.10.201/files/dmx_cwa.txt</pre>
+<pre>https://workshop.agron.iastate.edu/files/dmx_cwa.txt</pre>
 
 </body>
 </html>
