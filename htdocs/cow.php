@@ -9,25 +9,16 @@ pg_query($conn, "SET TIME ZONE 'UTC'");
 $rs = pg_query(
     $conn,
     "SELECT distinct team from nwa_warnings WHERE " .
-        "issue >= '2023-03-23 19:00+00' and issue < '2023-03-23 20:30+00' and team != 'THE_WEATHER_BUREAU'"
+        "issue >= '2023-04-20 19:30+00' and issue < '2023-04-20 21:00+00' and team != 'THE_WEATHER_BUREAU'"
 );
 $results = array();
 $tor_results = array();
-//$results["KICT ACTUAL"] = Array(
-// "warnings" => 17,
-// "csi" => 0.42,
-// "pod" => 0.60,
-// "far" => 0.41,
-// "av" => 37,
-// "sz" => 1420,
-// "lincoln" => 37.0 * 0.42,
-//);
 
 for ($i = 0; $row = pg_fetch_array($rs); $i++) {
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
     $cow->setForecastWFO("DMX");
-    $cow->setLimitTime(mktime(19, 0, 0, 3, 23, 2023), mktime(20, 30, 0, 3, 23, 2023)); //!UTC
+    $cow->setLimitTime(mktime(19, 30, 0, 4, 20, 2023), mktime(21, 0, 0, 4, 20, 2023)); //!UTC
     $cow->setHailSize(1);
     $cow->setLimitType(array('SV', 'TO'));
     $cow->setLimitLSRType(array('SV', 'TO'));
@@ -48,7 +39,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
 
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
-    $cow->setLimitTime(mktime(19, 0, 0, 3, 23, 2023), mktime(20, 30, 0, 3, 23, 2023)); //!UTC
+    $cow->setLimitTime(mktime(19, 30, 0, 4, 20, 2023), mktime(21, 0, 0, 4, 20, 2023)); //!UTC
     $cow->setHailSize(1);
     $cow->setLimitType(array('TO'));
     $cow->setLimitLSRType(array('TO'));
@@ -122,7 +113,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
 </head>
 
 <body style="margin: 5px !important;">
-    <span style="font-size: 48;"> &nbsp; &nbsp; http://192.168.10.201/cow.php</span><br />
+    <span style="font-size: 48;"> &nbsp; &nbsp; https://workshop.agron.iastate.edu/cow.php</span><br />
 
     <span style="font-size: 30;">Tornado and Severe Thunderstorm</span>
 

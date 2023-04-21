@@ -3,8 +3,8 @@ MT417 Timing
 
 Workshop UTC | KDGX Event UTC
 ----- | ----
-20 Apr 2022 1930 | 2 May 2021 2230
-20 Apr 2022 2100 | 3 May 2021 0045
+20 Apr 2023 1930 | 2 May 2021 2230
+20 Apr 2023 2100 | 3 May 2021 0045
 
 nwa
 ---
