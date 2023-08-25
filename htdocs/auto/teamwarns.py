@@ -1,12 +1,12 @@
 """Map a Team's warnings and perhaps more!"""
 from io import BytesIO
 
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import geopandas as gpd
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from paste.request import parse_formvars
-from pyiem.util import get_sqlalchemy_conn, utc
-from pyiem.plot.use_agg import plt
 from pyiem.plot import MapPlot
+from pyiem.plot.use_agg import plt
+from pyiem.util import get_sqlalchemy_conn, utc
 
 STS = utc(2023, 4, 20, 19, 30)
 ETS = utc(2023, 4, 20, 21, 0)

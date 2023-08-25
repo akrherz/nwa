@@ -5,8 +5,8 @@ import datetime
 
 import psycopg2.extras
 from pandas.io.sql import read_sql
-from pyiem.util import get_dbconn, utc, get_sqlalchemy_conn
 from pyiem.network import Table as NetworkTable
+from pyiem.util import get_dbconn, get_sqlalchemy_conn, utc
 
 
 def main():

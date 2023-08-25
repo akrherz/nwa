@@ -1,7 +1,7 @@
 """Fake the realtime delivery of near realtime data!"""
 import os
-import time
 import sys
+import time
 
 # third party
 import requests

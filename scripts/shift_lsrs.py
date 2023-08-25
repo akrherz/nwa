@@ -1,12 +1,11 @@
 """Need to shift LSRs in space and time"""
 import math
-from datetime import timezone, timedelta
+from datetime import timedelta, timezone
 
 import psycopg2.extras
 from pyiem import util
 from pyiem.network import Table as NetworkTable
 from pyproj import Transformer
-
 
 T_4326_2163 = Transformer.from_proj(4326, 2163, always_xy=True)
 T_2163_4326 = Transformer.from_proj(2163, 4326, always_xy=True)

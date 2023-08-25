@@ -1,13 +1,13 @@
 """Fake the realtime delivery of archived Level II products."""
-import subprocess
 import datetime
 import glob
 import os
-import time
+import subprocess
 import sys
+import time
 
-from tqdm import tqdm
 import pytz
+from tqdm import tqdm
 
 NEXRAD = sys.argv[1]
 if len(NEXRAD) != 4:

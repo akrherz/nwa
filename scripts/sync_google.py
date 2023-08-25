@@ -1,10 +1,10 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
 import datetime
 
+import isudatateam.cscap_utils as util
 import psycopg2
 import pytz
 from pyiem.util import utc
-import isudatateam.cscap_utils as util
 
 # First mesh point
 ARCHIVE_T0 = utc(2013, 5, 20, 19, 12)

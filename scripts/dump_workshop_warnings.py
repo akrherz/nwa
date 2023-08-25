@@ -14,7 +14,7 @@ A helpful data point here is to know the exact periods of the workshops!
 import sys
 
 import geopandas as gpd
-from pyiem.util import utc, get_sqlalchemy_conn
+from pyiem.util import get_sqlalchemy_conn, utc
 
 
 def main(argv):
