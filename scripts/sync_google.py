@@ -1,4 +1,5 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
+
 import datetime
 
 import isudatateam.cscap_utils as util
@@ -7,8 +8,8 @@ import pytz
 from pyiem.util import utc
 
 # First mesh point
-ARCHIVE_T0 = utc(2013, 5, 20, 19, 12)
-RT_T0 = utc(2023, 3, 23, 19, 0)
+ARCHIVE_T0 = utc(2020, 4, 12, 19, 0)
+RT_T0 = utc(2024, 3, 27, 19, 0)
 # Second mesh point
 ARCHIVE_T1 = utc(2013, 5, 20, 21, 24)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)

@@ -1,4 +1,5 @@
 """Fake the realtime delivery of near realtime data!"""
+
 import os
 import sys
 import time

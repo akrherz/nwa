@@ -1,4 +1,5 @@
 """Fake the realtime delivery of archived Level II products."""
+
 import datetime
 import glob
 import os

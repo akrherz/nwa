@@ -1,4 +1,5 @@
 """Map a Team's warnings and perhaps more!"""
+
 from io import BytesIO
 
 import geopandas as gpd

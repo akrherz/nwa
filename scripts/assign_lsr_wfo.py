@@ -1,4 +1,5 @@
 """Make sure that the LSRs are actually for DMX!"""
+
 import sys
 
 import psycopg2

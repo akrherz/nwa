@@ -1,6 +1,7 @@
 """
- Shift warnings around
+Shift warnings around
 """
+
 import datetime
 
 import psycopg2.extras

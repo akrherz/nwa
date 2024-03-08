@@ -11,6 +11,7 @@ A helpful data point here is to know the exact periods of the workshops!
     2012-03-29 19:10 - 20:40
 
 """
+
 import sys
 
 import geopandas as gpd
