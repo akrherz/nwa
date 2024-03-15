@@ -16,7 +16,7 @@ RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
-SHEET = "1DtSfbMVfbzAolU86yv_ARU_wTZiiJRWAaGEiOknRsA4"
+SHEET = "1eh7eiCy6ANA1M4LN2-Wy6nKMG93W0fij5NDiGHhnk7E"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -46,7 +46,7 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2023-03-23'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2024-03-27'")
     print(f"Deleted {mcursor.rowcount} rows")
 
     # Get me a client, stat
@@ -65,15 +65,15 @@ def main():
         vals = [a.get("formattedValue") for a in row["values"]]
         data = dict(zip(cols, vals))
         if data.get("Type") is None:
-            print()
             continue
-        # if data["Obs Time (UTC)"] is None:
+        # if data["Workshop UTC"].strip() != "":
+        #    print(f"{convtime(data['Workshop UTC']):%Y-%m-%d %H:%M}")
         #    continue
-        # ts = convtime(data["Workshop (UTC)"]).replace(tzinfo=pytz.UTC)
+        valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
         # offset = (ts - ARCHIVE_T0).total_seconds() / SPEEDUP
         # valid = RT_T0 + datetime.timedelta(seconds=offset)
         # print(f"{valid:%Y-%m-%d %H:%M}")
-        valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
+        # valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
         # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
         #    tzinfo=pytz.UTC
         # )

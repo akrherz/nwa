@@ -1,4 +1,5 @@
 --- NWA Database Tables
+create extension postgis;
 
 CREATE TABLE lsrs (
     valid timestamp with time zone,
@@ -17,6 +18,7 @@ CREATE TABLE lsrs (
     CONSTRAINT enforce_geotype_geom CHECK (((geometrytype(geom) = 'POINT'::text) OR (geom IS NULL))),
     CONSTRAINT enforce_srid_geom CHECK ((st_srid(geom) = 4326))
 );
+grant select on lsrs to apache;
 
 
 ALTER TABLE public.lsrs OWNER TO akrherz;
@@ -48,6 +50,7 @@ CREATE TABLE nwa_warnings (
     CONSTRAINT enforce_geotype_geom CHECK (((geometrytype(geom) = 'MULTIPOLYGON'::text) OR (geom IS NULL))),
     CONSTRAINT enforce_srid_geom CHECK ((st_srid(geom) = 4326))
 );
+grant all on nwa_warnings to apache;
 
 
 ALTER TABLE public.nwa_warnings OWNER TO akrherz;
