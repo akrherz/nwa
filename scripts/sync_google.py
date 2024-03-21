@@ -11,7 +11,7 @@ from pyiem.util import utc
 ARCHIVE_T0 = utc(2020, 4, 12, 19, 0)
 RT_T0 = utc(2024, 3, 27, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = utc(2013, 5, 20, 21, 24)
+ARCHIVE_T1 = utc(2020, 4, 12, 21, 30)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
@@ -69,11 +69,12 @@ def main():
         # if data["Workshop UTC"].strip() != "":
         #    print(f"{convtime(data['Workshop UTC']):%Y-%m-%d %H:%M}")
         #    continue
-        valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
-        # offset = (ts - ARCHIVE_T0).total_seconds() / SPEEDUP
+        # valid = convtime(data["Obs Time (UTC)"]).replace(tzinfo=pytz.UTC)
+        # offset = (valid - ARCHIVE_T0).total_seconds() / SPEEDUP
         # valid = RT_T0 + datetime.timedelta(seconds=offset)
         # print(f"{valid:%Y-%m-%d %H:%M}")
-        # valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
+        # continue
+        valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
         # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
         #    tzinfo=pytz.UTC
         # )
@@ -91,7 +92,7 @@ def main():
         sql = """
         INSERT into lsrs (valid, display_valid, type, magnitude, city, source,
         remark, typetext, geom, wfo) values (%s, %s, %s, %s, %s, %s,
-        %s, %s, 'SRID=4326;POINT(%s %s)', 'DMX')"""
+        %s, %s, ST_Point(%s, %s, 4326), 'DMX')"""
         args = (
             valid,
             revealts,
