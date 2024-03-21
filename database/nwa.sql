@@ -24,7 +24,7 @@ grant select on lsrs to apache;
 ALTER TABLE public.lsrs OWNER TO akrherz;
 
 CREATE TABLE nwa_warnings (
-    id integer NOT NULL,
+    id serial,
     issue timestamp with time zone,
     expire timestamp with time zone,
     updated timestamp with time zone,
@@ -46,12 +46,11 @@ CREATE TABLE nwa_warnings (
     team character varying,
     ibwtag text,
     client_addr text,
+    obs text,
     CONSTRAINT enforce_dims_geom CHECK ((st_ndims(geom) = 2)),
     CONSTRAINT enforce_geotype_geom CHECK (((geometrytype(geom) = 'MULTIPOLYGON'::text) OR (geom IS NULL))),
     CONSTRAINT enforce_srid_geom CHECK ((st_srid(geom) = 4326))
 );
 grant all on nwa_warnings to apache;
-
-
-ALTER TABLE public.nwa_warnings OWNER TO akrherz;
-
+grant all on nwa_warnings_id_seq to apache;
+ALTER TABLE nwa_warnings OWNER TO akrherz;
