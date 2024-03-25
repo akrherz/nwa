@@ -9,7 +9,8 @@ pg_query($conn, "SET TIME ZONE 'UTC'");
 $rs = pg_query(
     $conn,
     "SELECT distinct team from nwa_warnings WHERE " .
-        "issue >= '2023-04-20 19:30+00' and issue < '2023-04-20 21:00+00' and team != 'THE_WEATHER_BUREAU'"
+        "issue >= '2024-03-27 19:00+00' and issue < '2024-03-27 20:30+00' ".
+        "and team != 'THE_WEATHER_BUREAU2'"
 );
 $results = array();
 $tor_results = array();
