@@ -1,4 +1,5 @@
 """Make sure that the LSRs are actually for DMX!"""
+
 import sys
 
 import psycopg2
@@ -25,9 +26,8 @@ def main():
         cursor2.execute(
             """
             SELECT wfo from ugcs WHERE
-    ST_transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),4326) && geom
-    and ST_Contains(geom,
-            ST_transform(ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'),4326))
+    ST_POINT(%s, %s,4326) && geom
+    and ST_Contains(geom, ST_POINT(%s, %s,4326))
             and end_ts is null and substr(ugc, 3, 1) = 'C'
     """,
             (lon, lat, lon, lat),

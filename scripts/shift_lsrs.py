@@ -1,8 +1,9 @@
 """Need to shift LSRs in space and time"""
+
 import math
 from datetime import timedelta, timezone
 
-import psycopg2.extras
+from psycopg.rows import dict_row
 from pyiem import util
 from pyiem.network import Table as NetworkTable
 from pyproj import Transformer
@@ -11,22 +12,22 @@ T_4326_2163 = Transformer.from_proj(4326, 2163, always_xy=True)
 T_2163_4326 = Transformer.from_proj(2163, 4326, always_xy=True)
 nt = NetworkTable("NEXRAD")
 POSTGIS = util.get_dbconn("postgis")
-pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
+pcursor = POSTGIS.cursor(row_factory=dict_row)
 NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
-ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
+ncursor = NWA.cursor(row_factory=dict_row)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2013, 5, 20, 19, 12)
-RT_T0 = util.utc(2023, 3, 23, 19, 0)
+ARCHIVE_T0 = util.utc(2020, 4, 12, 19, 0)
+RT_T0 = util.utc(2024, 3, 27, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2013, 5, 20, 21, 24)
+ARCHIVE_T1 = util.utc(2020, 4, 12, 21, 30)
 RT_T1 = RT_T0 + timedelta(minutes=90)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
 # Site NEXRAD
-REAL88D = "TLX"
+REAL88D = "DGX"
 FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
@@ -74,13 +75,13 @@ def workflow(csvfp):
         """SELECT distinct *, ST_astext(geom) as tgeom,
         ST_x( ST_transform( geom, 2163) ) -
             ST_x( ST_transform(
-                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_x,
+                ST_POINT(%s, %s, 4326), 2163)) as offset_x,
         ST_y( ST_transform( geom, 2163) ) -
             ST_y( ST_transform(
-                ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as offset_y
+                ST_POINT(%s, %s, 4326), 2163)) as offset_y
         from lsrs WHERE valid BETWEEN %s and %s
         and ST_distance( ST_transform(geom, 2163),
-            ST_transform( ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163))
+            ST_transform( ST_POINT(%s, %s, 4326), 2163))
         < (230.0 / 0.6214 * 1000.0)
     """,
         (
@@ -104,7 +105,7 @@ def workflow(csvfp):
         ncursor.execute(
             """
             SELECT name, ST_distance(ST_transform(geom, 2163),
-            ST_GeomFromEWKT('SRID=2163;POINT(%s %s)')) as d,
+            ST_POINT(%s, %s, 2163)) as d,
             %s - ST_x(ST_transform(geom,2163)) as offsetx,
             %s - ST_y(ST_transform(geom,2163)) as offsety
             from cities
@@ -136,9 +137,9 @@ def workflow(csvfp):
         ncursor.execute(
             """
         SELECT * from nws_ugc WHERE
-   ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326) && geom
+   ST_transform(ST_POINT(%s, %s, 2163),4326) && geom
    and ST_Contains(geom,
-           ST_transform(ST_GeomFromEWKT('SRID=2163;POINT(%s %s)'),4326))
+           ST_transform(ST_POINT(%s, %s, 2163),4326))
         """,
             (
                 locx,
@@ -161,7 +162,7 @@ def workflow(csvfp):
         source, remark, wfo, typetext, geom, display_valid)
         values ('%s', '%s', %s, '%s',
         '%s', '%s', '%s', '%s', '%s', '%s',
-        ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), '%s')
+        ST_POINT(%s, %s, 4326), '%s')
         """ % (
             valid.strftime("%Y-%m-%d %H:%M+00"),
             row["type"],

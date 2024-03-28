@@ -1,4 +1,5 @@
 """Fake the realtime delivery of archived Level II products."""
+
 import datetime
 import glob
 import os
@@ -15,10 +16,10 @@ if len(NEXRAD) != 4:
     sys.exit()
 MYDIR = sys.argv[2]
 
-orig0 = datetime.datetime(2021, 5, 2, 22, 30).replace(tzinfo=pytz.UTC)
-orig1 = orig0 + datetime.timedelta(minutes=135)
+orig0 = datetime.datetime(2020, 4, 12, 19, 0).replace(tzinfo=pytz.UTC)
+orig1 = orig0 + datetime.timedelta(minutes=150)
 
-workshop0 = datetime.datetime(2023, 4, 20, 19, 30).replace(tzinfo=pytz.UTC)
+workshop0 = datetime.datetime(2024, 3, 27, 19, 0).replace(tzinfo=pytz.UTC)
 workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
 speedup = (orig1 - orig0).total_seconds() / (

@@ -1,4 +1,5 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
+
 import datetime
 
 import isudatateam.cscap_utils as util
@@ -7,15 +8,15 @@ import pytz
 from pyiem.util import utc
 
 # First mesh point
-ARCHIVE_T0 = utc(2013, 5, 20, 19, 12)
-RT_T0 = utc(2023, 3, 23, 19, 0)
+ARCHIVE_T0 = utc(2020, 4, 12, 19, 0)
+RT_T0 = utc(2024, 3, 27, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = utc(2013, 5, 20, 21, 24)
+ARCHIVE_T1 = utc(2020, 4, 12, 21, 30)
 RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
-SHEET = "1DtSfbMVfbzAolU86yv_ARU_wTZiiJRWAaGEiOknRsA4"
+SHEET = "1eh7eiCy6ANA1M4LN2-Wy6nKMG93W0fij5NDiGHhnk7E"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -45,7 +46,7 @@ def main():
     """Go Main Go"""
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2023-03-23'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2024-03-27'")
     print(f"Deleted {mcursor.rowcount} rows")
 
     # Get me a client, stat
@@ -64,14 +65,15 @@ def main():
         vals = [a.get("formattedValue") for a in row["values"]]
         data = dict(zip(cols, vals))
         if data.get("Type") is None:
-            print()
             continue
-        # if data["Obs Time (UTC)"] is None:
+        # if data["Workshop UTC"].strip() != "":
+        #    print(f"{convtime(data['Workshop UTC']):%Y-%m-%d %H:%M}")
         #    continue
-        # ts = convtime(data["Workshop (UTC)"]).replace(tzinfo=pytz.UTC)
-        # offset = (ts - ARCHIVE_T0).total_seconds() / SPEEDUP
+        # valid = convtime(data["Obs Time (UTC)"]).replace(tzinfo=pytz.UTC)
+        # offset = (valid - ARCHIVE_T0).total_seconds() / SPEEDUP
         # valid = RT_T0 + datetime.timedelta(seconds=offset)
         # print(f"{valid:%Y-%m-%d %H:%M}")
+        # continue
         valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
         # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
         #    tzinfo=pytz.UTC
@@ -90,7 +92,7 @@ def main():
         sql = """
         INSERT into lsrs (valid, display_valid, type, magnitude, city, source,
         remark, typetext, geom, wfo) values (%s, %s, %s, %s, %s, %s,
-        %s, %s, 'SRID=4326;POINT(%s %s)', 'DMX')"""
+        %s, %s, ST_Point(%s, %s, 4326), 'DMX')"""
         args = (
             valid,
             revealts,

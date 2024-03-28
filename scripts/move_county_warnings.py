@@ -1,4 +1,5 @@
-""" Convert old county warnings into simple polygons """
+"""Convert old county warnings into simple polygons"""
+
 import datetime
 
 import psycopg2

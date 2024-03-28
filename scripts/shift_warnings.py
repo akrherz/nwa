@@ -1,32 +1,31 @@
 """
- Shift warnings around
+Shift warnings around
 """
+
 import datetime
 
-import psycopg2.extras
 from pandas.io.sql import read_sql
+from pyiem.database import get_dbconnc, get_sqlalchemy_conn
 from pyiem.network import Table as NetworkTable
-from pyiem.util import get_dbconn, get_sqlalchemy_conn, utc
+from pyiem.util import utc
 
 
 def main():
     """Go Main Go."""
     nt = NetworkTable("NEXRAD")
-    POSTGIS = get_dbconn("postgis")
-    pcursor = POSTGIS.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    NWA = get_dbconn("nwa", host="localhost")
-    ncursor = NWA.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    POSTGIS, pcursor = get_dbconnc("postgis")
+    NWA, ncursor = get_dbconnc("nwa", host="localhost")
 
     ncursor.execute(
         "DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and "
-        "issue > 'TODAY' and issue < 'TOMORROW'"
+        "issue > '2024-03-27' and issue < '2024-03-28'"
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
-    orig0 = utc(2013, 5, 20, 19, 12)
-    orig1 = orig0 + datetime.timedelta(minutes=134)
+    orig0 = utc(2020, 4, 12, 19, 0)
+    orig1 = orig0 + datetime.timedelta(minutes=150)
 
-    workshop0 = utc(2023, 3, 23, 19, 30)
+    workshop0 = utc(2024, 3, 27, 19, 0)
     workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
     speedup = (orig1 - orig0).total_seconds() / (
@@ -41,10 +40,8 @@ def main():
     pcursor.execute(
         """
         SELECT
-        ST_x( ST_transform(
-            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as x,
-        ST_y( ST_transform(
-            ST_GeomFromEWKT('SRID=4326;POINT(%s %s)'), 2163)) as y
+        ST_x( ST_transform(ST_Point(%s, %s, 4326), 2163)) as x,
+        ST_y( ST_transform(ST_Point(%s, %s, 4326), 2163)) as y
     """,
         (NEXRAD_LON, NEXRAD_LAT, NEXRAD_LON, NEXRAD_LAT),
     )
@@ -53,15 +50,14 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["TLX"]["lat"]
-    NEXRAD_LON = nt.sts["TLX"]["lon"]
-    tlx_coords = f"SRID=4326;POINT({NEXRAD_LON} {NEXRAD_LAT})"
+    NEXRAD_LAT = nt.sts["DGX"]["lat"]
+    NEXRAD_LON = nt.sts["DGX"]["lon"]
     pcursor.execute(
         """SELECT
-        ST_x( ST_transform( ST_GeomFromEWKT(%s), 2163)) as x,
-        ST_y( ST_transform( ST_GeomFromEWKT(%s), 2163)) as y
+        ST_x( ST_transform( ST_Point(%s, %s, 4326), 2163)) as x,
+        ST_y( ST_transform( ST_Point(%s, %s, 4326), 2163)) as y
         """,
-        (tlx_coords, tlx_coords),
+        (NEXRAD_LON, NEXRAD_LAT, NEXRAD_LON, NEXRAD_LAT),
     )
     row = pcursor.fetchone()
     radx = row["x"]
@@ -74,17 +70,18 @@ def main():
 
     # Get all the warnings in the vicinity
     pcursor.execute(
-        f"""
+        """
         SELECT *, ST_astext(ST_Transform(ST_Translate(ST_Transform(geom,
             2163),%s,%s),4236)) as tgeom
-        from sbw_{orig0.year} w
-        WHERE expire  > %s and issue < %s and significance = 'W'
-        and phenomena in ('SV','TO') and status = 'NEW'
+        from sbw w
+        WHERE vtec_year = %s and expire  > %s and issue < %s
+        and significance = 'W' and phenomena in ('SV','TO') and status = 'NEW'
         ORDER by issue ASC
     """,
         (
             offsetx,
             offsety,
+            orig0.year,
             orig0 - datetime.timedelta(minutes=300),
             orig1 + datetime.timedelta(minutes=300),
         ),
@@ -128,7 +125,7 @@ def main():
             """
             SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid
             from nwa_warnings w, nws_ugc u
-            WHERE w.issue > 'TODAY' and w.issue < 'TOMORROW'
+            WHERE w.issue > '2024-03-27' and w.issue < '2024-03-28'
             and ST_Intersects(u.geom, w.geom)
             and w.team = 'THE_WEATHER_BUREAU'
             ORDER by w.wfo, w.eventid ASC
@@ -157,9 +154,9 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2023-03-23 19:00+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2023-03-23 19:00+00' and "
-        "expire > '2023-03-23 19:00+00'"
+        "UPDATE nwa_warnings SET issue = '2024-03-27 19:00+00' WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < '2024-03-27 20:30+00' and "
+        "expire > '2024-03-27 19:00+00'"
     )
     print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2023 HACK")
 
