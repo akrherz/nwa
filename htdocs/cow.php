@@ -19,7 +19,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
     $cow->setForecastWFO("DMX");
-    $cow->setLimitTime(mktime(19, 30, 0, 4, 20, 2023), mktime(21, 0, 0, 4, 20, 2023)); //!UTC
+    $cow->setLimitTime(mktime(19, 0, 0, 3, 27, 2024), mktime(20, 30, 0, 3, 27, 2024)); //!UTC
     $cow->setHailSize(1);
     $cow->setLimitType(array('SV', 'TO'));
     $cow->setLimitLSRType(array('SV', 'TO'));
@@ -40,7 +40,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
 
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
-    $cow->setLimitTime(mktime(19, 30, 0, 4, 20, 2023), mktime(21, 0, 0, 4, 20, 2023)); //!UTC
+    $cow->setLimitTime(mktime(19, 0, 0, 3, 27, 2024), mktime(20, 30, 0, 3, 27, 2024)); //!UTC
     $cow->setHailSize(1);
     $cow->setLimitType(array('TO'));
     $cow->setLimitLSRType(array('TO'));
@@ -180,7 +180,8 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
         <tbody>
             <?php
             foreach ($tor_results as $k => $v) {
-                $uri = sprintf("/auto/teamwarns_%s.png", $k);
+                //$uri = sprintf("/auto/teamwarns_%s.png", $k);
+                $uri = sprintf("disabled");
                 echo sprintf(
                     "<tr><td><a href=\"%s\">%s</a></td><td>%02d</td><td>%05.2f</td><td>%04.2f</td>" .
                         "<td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td>" .
