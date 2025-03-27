@@ -18,14 +18,14 @@ def main():
 
     ncursor.execute(
         "DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and "
-        "issue > '2024-03-27' and issue < '2024-03-28'"
+        "issue > '2025-03-27' and issue < '2025-03-28'"
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
-    orig0 = utc(2020, 4, 12, 19, 0)
-    orig1 = orig0 + datetime.timedelta(minutes=150)
+    orig0 = utc(2018, 9, 20, 22, 24)
+    orig1 = orig0 + datetime.timedelta(minutes=125)
 
-    workshop0 = utc(2024, 3, 27, 19, 0)
+    workshop0 = utc(2025, 3, 27, 19, 0)
     workshop1 = workshop0 + datetime.timedelta(minutes=90)
 
     speedup = (orig1 - orig0).total_seconds() / (
@@ -50,8 +50,8 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["DGX"]["lat"]
-    NEXRAD_LON = nt.sts["DGX"]["lon"]
+    NEXRAD_LAT = nt.sts["MPX"]["lat"]
+    NEXRAD_LON = nt.sts["MPX"]["lon"]
     pcursor.execute(
         """SELECT
         ST_x( ST_transform( ST_Point(%s, %s, 4326), 2163)) as x,
@@ -125,7 +125,7 @@ def main():
             """
             SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid
             from nwa_warnings w, nws_ugc u
-            WHERE w.issue > '2024-03-27' and w.issue < '2024-03-28'
+            WHERE w.issue > '2025-03-27' and w.issue < '2025-03-28'
             and ST_Intersects(u.geom, w.geom)
             and w.team = 'THE_WEATHER_BUREAU'
             ORDER by w.wfo, w.eventid ASC
@@ -154,9 +154,9 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2024-03-27 19:00+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2024-03-27 20:30+00' and "
-        "expire > '2024-03-27 19:00+00'"
+        "UPDATE nwa_warnings SET issue = '2025-03-27 19:00+00' WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < '2025-03-27 19:00+00' and "
+        "expire > '2025-03-27 19:00+00'"
     )
     print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2023 HACK")
 

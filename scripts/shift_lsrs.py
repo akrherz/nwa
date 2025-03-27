@@ -17,17 +17,17 @@ NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
 ncursor = NWA.cursor(row_factory=dict_row)
 
 # First mesh point
-ARCHIVE_T0 = util.utc(2020, 4, 12, 19, 0)
-RT_T0 = util.utc(2024, 3, 27, 19, 0)
+ARCHIVE_T0 = util.utc(2018, 9, 20, 22)
+RT_T0 = util.utc(2025, 3, 27, 19, 0)
 # Second mesh point
-ARCHIVE_T1 = util.utc(2020, 4, 12, 21, 30)
+ARCHIVE_T1 = util.utc(2018, 9, 21, 0, 30)
 RT_T1 = RT_T0 + timedelta(minutes=90)
 
 SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
 print(f"Speedup is {SPEEDUP:.2f}")
 
 # Site NEXRAD
-REAL88D = "DGX"
+REAL88D = "MPX"
 FAKE88D = "DMX"
 NEXRAD_LAT = nt.sts[REAL88D]["lat"]
 NEXRAD_LON = nt.sts[REAL88D]["lon"]
