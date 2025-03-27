@@ -1,10 +1,34 @@
-MT417 Timing
-============
+RADAR Warning Workshop
+======================
 
-Workshop UTC | KDGX Event UTC
------ | ----
-11 Apr 2024 1930 | 2 May 2021 2230
-11 Apr 2024 2100 | 3 May 2021 0045
+A collection of scripts to drive a displaced time and space warning workshop
+for RADAR training purposes.
+
+Workshop Shapefile Outputs
+--------------------------
+
+Here are free-to-use shapefiles containing the workshop attendees issued
+warnings.  The `team` named `THE_WEATHER_BUREAU` are the actual NWS issued
+polygons for an event.
+
+Workshop Venue | Case UTC | Workshop Timing UTC | Issued Warnings
+--- | --- | --- | ---
+2025 C Iowa NWA | MPX 20 Sep 2018 2224-0029 | 27 Mar 2025 1900-2030 | [ciowa_nwa_2025.zip](output/ciowa_nwa_2025.zip)
+2024 ISU MT4170 | DGX 02 May 2021 2230-0045 | 11 Apr 2024 1930-2100 | [isu_mt4170_2024.zip](output/isu_mt4170_2024.zip)
+2024 C Iowa NWA | DGX 12 Apr 2020 1900-2130 | 27 Mar 2024 1900-2030 | [ciowa_nwa_2024.zip](output/ciowa_nwa_2024.zip)
+2023 C Iowa NWA | DGX 20 May 2013 1912-2124 | 23 Mar 2023 1900-2030 | [ciowa_nwa_2023.zip](output/ciowa_nwa_2023.zip)
+2022 C Iowa NWA | DMX 18 Nov 2017 2120-2317 | 31 Mar 2022 1858-2028 | [ciowa_nwa_2022.zip](output/ciowa_nwa_2022.zip)
+2021 C Iowa NWA | GWX 25 Mar 2021 2115-2231 | 25 Mar 2021 2115-2231 | (Live/Real Event) [ciowa_nwa_2021.zip](output/ciowa_nwa_2021.zip)
+2020 C Iowa NWA | ... | ... | ...
+2019 C Iowa NWA | MPX 10 Jul 2017 0100-0400 | 28 Mar 2019 1900-2030 | [ciowa_nwa_2019.zip](output/ciowa_nwa_2019.zip)
+2018 C Iowa NWA | DMX 28 Jun 2017 2030-2330 | 22 Mar 2018 1900-2030 | [ciowa_nwa_2018.zip](output/ciowa_nwa_2018.zip)
+2017 C Iowa NWA | DMX 30 Jun 2014 1540-1920 | 30 Mar 2017 1840-2030 | [ciowa_nwa_2017.zip](output/ciowa_nwa_2017.zip)
+2016 C Iowa NWA | ICT  8 Apr 1999 1937-2107 | 31 Mar 2016 1810-1950 | [ciowa_nwa_2016.zip](output/ciowa_nwa_2016.zip)
+2015 C Iowa NWA | ICT 15 Apr 2012 0000-0345 | 26 Mar 2015 1840-2010 | [ciowa_nwa_2015.zip](output/ciowa_nwa_2015.zip)
+2014 C Iowa NWA | LSX 31 May 2013 2230-0130 | 27 Mar 2014 1840-2010 | [ciowa_nwa_2014.zip](output/ciowa_nwa_2014.zip)
+2013 C Iowa NWA | SGF 29 Feb 2012 0404-0737 |  4 Apr 2013 1910-2040 | [ciowa_nwa_2013.zip](output/ciowa_nwa_2013.zip)
+2012 C Iowa NWA | ... | 29 Mar 2012 1910-2040 | [ciowa_nwa_2012.zip](output/ciowa_nwa_2012.zip)
+2011 C Iowa NWA | TWX 5 Jun 2008 2300-0200 | 31 Mar 2011 1910-2040 | ...
 
 nwa
 ---
