@@ -3,7 +3,7 @@
  *  Functionized routines for IEM Cow
  *  This way we can call from other applications, like dailyb :)
  */
-putenv("TZ=GMT");
+putenv("TZ=UTC");
 
 class cow {
 
@@ -316,11 +316,11 @@ function loadWarnings(){
          nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and %s 
          ORDER by issue ASC) as foo) 
       as foo2", $this->sqlWFOBuilder(), 
-   date("Y/m/d H:i", $this->sts), date("Y/m/d H:i", $this->ets), 
+   $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"), 
    $this->sqlTypeBuilder() );
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++){
-        $key = sprintf("%s-%s-%s-%s", date("Y", $this->sts), $row["wfo"], 
+        $key = sprintf("%s-%s-%s-%s", $this->sts->format("Y"), $row["wfo"], 
                        $row["phenomena"], $row["eventid"]);
         if ( ! isset($this->warnings[$key]) ){
             $this->warnings[$key] = Array("ugc"=> Array(), "geom" => "",
@@ -366,7 +366,7 @@ function loadLSRs() {
          type = 'T' or (type = 'G' and magnitude >= 58) or type = 'D'
          or type = 'F')
         ORDER by valid ASC", $this->lsrbuffer, $this->forecastWFO,
-        date("Y/m/d H:i", $this->sts), date("Y/m/d H:i", $this->ets), 
+        $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"), 
         $this->sqlLSRTypeBuilder(), $this->hailsize);
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++)
@@ -425,7 +425,7 @@ function sbwVerify() {
          $this->forecastWFO, $this->hailsize,
          date("Y/m/d H:i", strtotime($v["issue"])),
          date("Y/m/d H:i", strtotime($v["expire"])),
-         date("Y/m/d H:i", $this->ets));
+         $this->ets->format("Y/m/d H:i") );
         $rs = $this->callDB($sql);
         for ($i=0;$row=@pg_fetch_array($rs,$i);$i++){
             $key = sprintf("%s-%s-%s-%s-%s", 
