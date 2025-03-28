@@ -2,16 +2,32 @@
 Shift warnings around
 """
 
-import datetime
+import json
+from datetime import datetime, timedelta, timezone
 
-from pandas.io.sql import read_sql
-from pyiem.database import get_dbconnc, get_sqlalchemy_conn
+import click
+import pandas as pd
+from pyiem.database import get_dbconnc, get_sqlalchemy_conn, sql_helper
 from pyiem.network import Table as NetworkTable
-from pyiem.util import utc
 
 
-def main():
+@click.command()
+@click.option("--nexrad", default="DMX", help="NEXRAD Site to Fake")
+def main(nexrad: str):
     """Go Main Go."""
+    cfg = json.load(open("../config/workshop.json"))
+    timing = cfg["timing"]
+    for key in timing:
+        timing[key] = datetime.strptime(
+            timing[key], "%Y-%m-%dT%H:%M:%SZ"
+        ).replace(tzinfo=timezone.utc)
+
+    speedup = (
+        timing["archive_end"] - timing["archive_begin"]
+    ).total_seconds() / (
+        timing["workshop_end"] - timing["workshop_begin"]
+    ).total_seconds()
+
     nt = NetworkTable("NEXRAD")
     POSTGIS, pcursor = get_dbconnc("postgis")
     NWA, ncursor = get_dbconnc("nwa", host="localhost")
@@ -22,19 +38,8 @@ def main():
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
-    orig0 = utc(2018, 9, 20, 22, 24)
-    orig1 = orig0 + datetime.timedelta(minutes=125)
-
-    workshop0 = utc(2025, 3, 27, 19, 0)
-    workshop1 = workshop0 + datetime.timedelta(minutes=90)
-
-    speedup = (orig1 - orig0).total_seconds() / (
-        workshop1 - workshop0
-    ).total_seconds()
-    print(f"Overall Speedup is {speedup:.4f}")
-
-    NEXRAD_LAT = nt.sts["DMX"]["lat"]
-    NEXRAD_LON = nt.sts["DMX"]["lon"]
+    NEXRAD_LAT = nt.sts[nexrad]["lat"]
+    NEXRAD_LON = nt.sts[nexrad]["lon"]
 
     # Get DMX coords in 2163
     pcursor.execute(
@@ -50,8 +55,8 @@ def main():
     dmxy = row["y"]
 
     # TLX or whatever RADAR we are offsetting too
-    NEXRAD_LAT = nt.sts["MPX"]["lat"]
-    NEXRAD_LON = nt.sts["MPX"]["lon"]
+    NEXRAD_LAT = nt.sts[cfg["nexrad"]]["lat"]
+    NEXRAD_LON = nt.sts[cfg["nexrad"]]["lon"]
     pcursor.execute(
         """SELECT
         ST_x( ST_transform( ST_Point(%s, %s, 4326), 2163)) as x,
@@ -81,9 +86,9 @@ def main():
         (
             offsetx,
             offsety,
-            orig0.year,
-            orig0 - datetime.timedelta(minutes=300),
-            orig1 + datetime.timedelta(minutes=300),
+            timing["archive_begin"].year,
+            timing["archive_begin"] - timedelta(minutes=300),
+            timing["archive_end"] + timedelta(minutes=300),
         ),
     )
 
@@ -92,13 +97,15 @@ def main():
         issue = row["issue"]
         expire = row["expire"]
         offset = (
-            (issue - orig0).days * 86400.0 + (issue - orig0).seconds
+            (issue - timing["archive_begin"]).days * 86400.0
+            + (issue - timing["archive_begin"]).seconds
         ) / speedup  # Speed up!
-        issue = workshop0 + datetime.timedelta(seconds=offset)
+        issue = timing["workshop_begin"] + timedelta(seconds=offset)
         offset = (
-            (expire - orig0).days * 86400.0 + (expire - orig0).seconds
+            (expire - timing["archive_begin"]).days * 86400.0
+            + (expire - timing["archive_begin"]).seconds
         ) / speedup  # Speed up!
-        expire = workshop0 + datetime.timedelta(seconds=offset)
+        expire = timing["workshop_begin"] + timedelta(seconds=offset)
 
         sql = """
         INSERT into nwa_warnings (issue, expire, gtype, wfo, eventid,
@@ -121,17 +128,21 @@ def main():
 
     # Now cull any warnings that are outside of DMX
     with get_sqlalchemy_conn("nwa", host="localhost") as conn:
-        df = read_sql(
-            """
+        df = pd.read_sql(
+            sql_helper("""
             SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid
             from nwa_warnings w, nws_ugc u
-            WHERE w.issue > '2025-03-27' and w.issue < '2025-03-28'
+            WHERE w.issue > :sts and w.issue < :ets
             and ST_Intersects(u.geom, w.geom)
             and w.team = 'THE_WEATHER_BUREAU'
             ORDER by w.wfo, w.eventid ASC
-        """,
+        """),
             conn,
             index_col=None,
+            params={
+                "sts": timing["workshop_begin"].replace(hour=0, minute=0),
+                "ets": timing["workshop_end"].replace(hour=23, minute=59),
+            },
         )
     print(f"Found {len(df.index)} warnings to consider culling...")
     hits = df[df["ugc_wfo"] == "DMX"]
@@ -154,11 +165,16 @@ def main():
     # Since NWS was not confined to a start time, we need to goose the
     # issuance time
     ncursor2.execute(
-        "UPDATE nwa_warnings SET issue = '2025-03-27 19:00+00' WHERE "
-        "team = 'THE_WEATHER_BUREAU' and issue < '2025-03-27 19:00+00' and "
-        "expire > '2025-03-27 19:00+00'"
+        "UPDATE nwa_warnings SET issue = %s WHERE "
+        "team = 'THE_WEATHER_BUREAU' and issue < %s and "
+        "expire > %s",
+        (
+            timing["workshop_begin"],
+            timing["workshop_begin"],
+            timing["workshop_begin"],
+        ),
     )
-    print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2023 HACK")
+    print(f"Goosed {ncursor2.rowcount} issuance times... MANUAL 2HACK")
 
     ncursor2.close()
     NWA.commit()

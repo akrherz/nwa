@@ -1,16 +1,27 @@
 <?php
 //date_default_timezone_set('America/Chicago');
 date_default_timezone_set('UTC');
-
+require_once "../include/config.php";
 require_once "../include/cow.php";
+$config = load_config();
 $conn = pg_connect("dbname=nwa host=127.0.0.1");
 pg_query($conn, "SET TIME ZONE 'UTC'");
 /* Get list of teams */
-$rs = pg_query(
+$stname = uniqid();
+pg_prepare(
     $conn,
+    $stname,
     "SELECT distinct team from nwa_warnings WHERE " .
-        "issue >= '2024-03-27 19:00+00' and issue < '2024-03-27 20:30+00' ".
+        "issue >= $1 and issue < $2 ".
         "and team != 'THE_WEATHER_BUREAU2'"
+);
+$rs = pg_execute(
+    $conn,
+    $stname,
+    array(
+        $config["timing"]["workshop_begin"]->format("Y-m-d H:i:s"),
+        $config["timing"]["workshop_end"]->format("Y-m-d H:i:s")
+    )
 );
 $results = array();
 $tor_results = array();
@@ -19,7 +30,9 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
     $cow->setForecastWFO("DMX");
-    $cow->setLimitTime(mktime(19, 0, 0, 3, 27, 2024), mktime(20, 30, 0, 3, 27, 2024)); //!UTC
+    $cow->setLimitTime(
+        $config["timing"]["workshop_begin"],
+        $config["timing"]["workshop_end"]);
     $cow->setHailSize(1);
     $cow->setLimitType(array('SV', 'TO'));
     $cow->setLimitLSRType(array('SV', 'TO'));
@@ -40,7 +53,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
 
     $cow = new cow($conn);
     $cow->setLimitWFO(array($row["team"]));
-    $cow->setLimitTime(mktime(19, 0, 0, 3, 27, 2024), mktime(20, 30, 0, 3, 27, 2024)); //!UTC
+    $cow->setLimitTime($config["timing"]["workshop_begin"], $config["timing"]["workshop_end"]);
     $cow->setHailSize(1);
     $cow->setLimitType(array('TO'));
     $cow->setLimitLSRType(array('TO'));

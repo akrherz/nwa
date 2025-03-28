@@ -1,7 +1,8 @@
 """Need to shift LSRs in space and time"""
 
+import json
 import math
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 from psycopg.rows import dict_row
 from pyiem import util
@@ -10,29 +11,6 @@ from pyproj import Transformer
 
 T_4326_2163 = Transformer.from_proj(4326, 2163, always_xy=True)
 T_2163_4326 = Transformer.from_proj(2163, 4326, always_xy=True)
-nt = NetworkTable("NEXRAD")
-POSTGIS = util.get_dbconn("postgis")
-pcursor = POSTGIS.cursor(row_factory=dict_row)
-NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
-ncursor = NWA.cursor(row_factory=dict_row)
-
-# First mesh point
-ARCHIVE_T0 = util.utc(2018, 9, 20, 22)
-RT_T0 = util.utc(2025, 3, 27, 19, 0)
-# Second mesh point
-ARCHIVE_T1 = util.utc(2018, 9, 21, 0, 30)
-RT_T1 = RT_T0 + timedelta(minutes=90)
-
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
-print(f"Speedup is {SPEEDUP:.2f}")
-
-# Site NEXRAD
-REAL88D = "MPX"
-FAKE88D = "DMX"
-NEXRAD_LAT = nt.sts[REAL88D]["lat"]
-NEXRAD_LON = nt.sts[REAL88D]["lon"]
-FAKE_NEXRAD_LAT = nt.sts[FAKE88D]["lat"]
-FAKE_NEXRAD_LON = nt.sts[FAKE88D]["lon"]
 
 
 def getdir(u, v):
@@ -56,11 +34,40 @@ def getdir(u, v):
 
 def workflow(csvfp):
     """Go!"""
+    cfg = json.load(open("../config/workshop.json"))
+    timing = cfg["timing"]
+    for key in timing:
+        timing[key] = datetime.strptime(
+            timing[key], "%Y-%m-%dT%H:%M:%SZ"
+        ).replace(tzinfo=timezone.utc)
+
+    speedup = (
+        timing["archive_end"] - timing["archive_begin"]
+    ).total_seconds() / (
+        timing["workshop_end"] - timing["workshop_begin"]
+    ).total_seconds()
+
+    nt = NetworkTable("NEXRAD")
+    POSTGIS = util.get_dbconn("postgis")
+    pcursor = POSTGIS.cursor(row_factory=dict_row)
+    NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
+    ncursor = NWA.cursor(row_factory=dict_row)
+
+    print(f"Speedup is {speedup:.2f}")
+
+    # Site NEXRAD
+    REAL88D = cfg["nexrad"]
+    FAKE88D = "DMX"
+    NEXRAD_LAT = nt.sts[REAL88D]["lat"]
+    NEXRAD_LON = nt.sts[REAL88D]["lon"]
+    FAKE_NEXRAD_LAT = nt.sts[FAKE88D]["lat"]
+    FAKE_NEXRAD_LON = nt.sts[FAKE88D]["lon"]
+
     ncursor.execute(
         "DELETE from lsrs WHERE valid > %s and valid < %s",
         (
-            RT_T0 - timedelta(minutes=300),
-            RT_T1 + timedelta(minutes=300),
+            timing["workshop_begin"] - timedelta(minutes=300),
+            timing["workshop_end"] + timedelta(minutes=300),
         ),
     )
     print(f"Removed {ncursor.rowcount} rows from nwa lsr table")
@@ -68,8 +75,8 @@ def workflow(csvfp):
     # Get Fake coords in 2163
     radx, rady = T_4326_2163.transform(FAKE_NEXRAD_LON, FAKE_NEXRAD_LAT)
 
-    sts = ARCHIVE_T0 - timedelta(minutes=300)
-    ets = ARCHIVE_T1 + timedelta(minutes=300)
+    sts = timing["archive_begin"] - timedelta(minutes=300)
+    ets = timing["archive_end"] + timedelta(minutes=300)
     # Get all LSRs within 230m of the nexrad
     pcursor.execute(
         """SELECT distinct *, ST_astext(geom) as tgeom,
@@ -128,9 +135,10 @@ def workflow(csvfp):
         # Compute the new valid time
         ts = row["valid"]
         offset = (
-            (ts - ARCHIVE_T0).days * 86400.0 + (ts - ARCHIVE_T0).seconds
-        ) / SPEEDUP  # Speed up!
-        valid = RT_T0 + timedelta(seconds=offset)
+            (ts - timing["archive_begin"]).days * 86400.0
+            + (ts - timing["archive_begin"]).seconds
+        ) / speedup  # Speed up!
+        valid = timing["workshop_begin"] + timedelta(seconds=offset)
         print(f"{ts} -> {valid}")
 
         # Query for WFO

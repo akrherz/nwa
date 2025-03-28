@@ -5,16 +5,6 @@ import datetime
 import isudatateam.cscap_utils as util
 import psycopg2
 import pytz
-from pyiem.util import utc
-
-# First mesh point
-ARCHIVE_T0 = utc(2020, 4, 12, 19, 0)
-RT_T0 = utc(2024, 3, 27, 19, 0)
-# Second mesh point
-ARCHIVE_T1 = utc(2020, 4, 12, 21, 30)
-RT_T1 = RT_T0 + datetime.timedelta(minutes=90)
-SPEEDUP = (ARCHIVE_T1 - ARCHIVE_T0).seconds / float((RT_T1 - RT_T0).seconds)
-print(f"Speedup is {SPEEDUP:.2f}")
 
 SHEET = "1eh7eiCy6ANA1M4LN2-Wy6nKMG93W0fij5NDiGHhnk7E"
 LKP = {
