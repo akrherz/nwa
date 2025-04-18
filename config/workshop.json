@@ -1,9 +1,9 @@
 {
-    "nexrad": "MPX",
+    "nexrad": "DGX",
     "timing": {
-        "archive_begin": "2018-09-20T22:24:00Z",
-        "archive_end": "2018-09-21T00:29:00Z",
-        "workshop_begin": "2025-03-27T19:00:00Z",
-        "workshop_end": "2025-03-27T20:30:00Z"
+        "archive_begin": "2020-04-12T19:00:00Z",
+        "archive_end": "2020-04-12T21:30:00Z",
+        "workshop_begin": "2025-04-17T19:30:00Z",
+        "workshop_end": "2025-04-17T21:00:00Z"
     }
 }
