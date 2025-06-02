@@ -2,5 +2,5 @@
 [tool.ruff]
 line-length = 79
 lint.select = ["E", "F", "I"]
-target-version = "py39"
+target-version = "py310"
 
