@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 from io import BytesIO
 
 import geopandas as gpd
+from matplotlib.image import imread
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from paste.request import parse_formvars
 from pyiem.database import get_sqlalchemy_conn, sql_helper
 from pyiem.plot import MapPlot
-from pyiem.plot.use_agg import plt
 
 PATH = "/opt/nwa/htdocs/icons"
 ZOOM = 0.6
@@ -28,13 +28,13 @@ def application(environ, start_response):
         ).replace(tzinfo=timezone.utc)
 
     ICONS = {
-        "D": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
-        "G": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
-        "H": OffsetImage(plt.imread(f"{PATH}/hail.png"), zoom=ZOOM),
-        "L": OffsetImage(plt.imread(f"{PATH}/lightning.gif"), zoom=ZOOM),
-        "N": OffsetImage(plt.imread(f"{PATH}/wind.png"), zoom=ZOOM),
-        "O": OffsetImage(plt.imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
-        "T": OffsetImage(plt.imread(f"{PATH}/tornado.png"), zoom=ZOOM - 0.2),
+        "D": OffsetImage(imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
+        "G": OffsetImage(imread(f"{PATH}/wind.png"), zoom=ZOOM),
+        "H": OffsetImage(imread(f"{PATH}/hail.png"), zoom=ZOOM),
+        "L": OffsetImage(imread(f"{PATH}/lightning.gif"), zoom=ZOOM),
+        "N": OffsetImage(imread(f"{PATH}/wind.png"), zoom=ZOOM),
+        "O": OffsetImage(imread(f"{PATH}/winddamage.png"), zoom=ZOOM),
+        "T": OffsetImage(imread(f"{PATH}/tornado.png"), zoom=ZOOM - 0.2),
     }
     form = parse_formvars(environ)
     team = form.get("team", "THE_WEATHER_BUREAU")
