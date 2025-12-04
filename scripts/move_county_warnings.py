@@ -1,9 +1,9 @@
 """Convert old county warnings into simple polygons"""
 
 import datetime
+from zoneinfo import ZoneInfo
 
 import psycopg2
-import pytz
 
 iempgconn = psycopg2.connect("postgis")
 iemcursor = iempgconn.cursor()
@@ -20,12 +20,12 @@ print("removed %s entries" % (cursor.rowcount,))
 # ______________________________________________________________________
 # Upstream is sync_google!
 orig0 = datetime.datetime(1999, 4, 8, 19, 37)
-orig0 = orig0.replace(tzinfo=pytz.timezone("UTC"))
+orig0 = orig0.replace(tzinfo=ZoneInfo("UTC"))
 origB = orig0.replace(hour=20, minute=50)
 orig1 = orig0.replace(hour=23, minute=16)
 
 workshop0 = datetime.datetime(2016, 3, 31, 18, 10)
-workshop0 = workshop0.replace(tzinfo=pytz.timezone("UTC"))
+workshop0 = workshop0.replace(tzinfo=ZoneInfo("UTC"))
 workshopB1 = workshop0.replace(hour=18, minute=40)
 workshopB2 = workshop0.replace(hour=18, minute=50)
 workshop1 = workshop0.replace(hour=19, minute=50)
@@ -66,8 +66,8 @@ iemcursor.execute(
 )
 for row in iemcursor:
     geo = row[0]
-    issue = row[1].replace(tzinfo=pytz.timezone("UTC"))
-    expire = row[2].replace(tzinfo=pytz.timezone("UTC"))
+    issue = row[1].replace(tzinfo=ZoneInfo("UTC"))
+    expire = row[2].replace(tzinfo=ZoneInfo("UTC"))
     phenomena = row[3]
     significance = row[4]
     eventid = row[5]
