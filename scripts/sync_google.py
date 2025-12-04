@@ -1,10 +1,10 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
 
 import datetime
+from zoneinfo import ZoneInfo
 
 import isudatateam.cscap_utils as util
 import psycopg2
-import pytz
 
 SHEET = "1eh7eiCy6ANA1M4LN2-Wy6nKMG93W0fij5NDiGHhnk7E"
 LKP = {
@@ -59,21 +59,22 @@ def main():
         # if data["Workshop UTC"].strip() != "":
         #    print(f"{convtime(data['Workshop UTC']):%Y-%m-%d %H:%M}")
         #    continue
-        # valid = convtime(data["Obs Time (UTC)"]).replace(tzinfo=pytz.UTC)
+        # valid = convtime(
+        # data["Obs Time (UTC)"]).replace(tzinfo=ZoneInfo("UTC"))
         # offset = (valid - ARCHIVE_T0).total_seconds() / SPEEDUP
         # valid = RT_T0 + datetime.timedelta(seconds=offset)
         # print(f"{valid:%Y-%m-%d %H:%M}")
         # continue
-        valid = convtime(data["Workshop UTC"]).replace(tzinfo=pytz.UTC)
+        valid = convtime(data["Workshop UTC"]).replace(tzinfo=ZoneInfo("UTC"))
         # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
-        #    tzinfo=pytz.UTC
+        #    tzinfo=ZoneInfo("UTC")
         # )
-        # ts = ts.replace(tzinfo=pytz.UTC)
+        # ts = ts.replace(tzinfo=ZoneInfo("UTC"))
         if data["Workshop Reveal UTC"] is None:
             revealts = valid
         else:
             revealts = convtime(data["Workshop Reveal UTC"])
-            revealts = revealts.replace(tzinfo=pytz.UTC)
+            revealts = revealts.replace(tzinfo=ZoneInfo("UTC"))
         # if ts != revealts:
         #    print(
         #        ("  Entry has reveal delta of %s minutes")
