@@ -53,7 +53,7 @@ def main():
     cols = [a.get("formattedValue", "") for a in grid["rowData"][0]["values"]]
     for row in grid["rowData"][1:]:
         vals = [a.get("formattedValue") for a in row["values"]]
-        data = dict(zip(cols, vals))
+        data = dict(zip(cols, vals, strict=True))
         if data.get("Type") is None:
             continue
         # if data["Workshop UTC"].strip() != "":
