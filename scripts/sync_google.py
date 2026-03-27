@@ -1,12 +1,13 @@
 """Pull what's available on an online Google Spreadsheet into our local DB"""
 
-import datetime
+import json
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 import isudatateam.cscap_utils as util
 import psycopg2
 
-SHEET = "1eh7eiCy6ANA1M4LN2-Wy6nKMG93W0fij5NDiGHhnk7E"
+SHEET = "1kVg4SXL3ZNRwpjqcm47Fdr6-ndHj2xqGUplIG7k7jnE"
 LKP = {
     "HAIL": "H",
     "TORNADO": "T",
@@ -27,16 +28,30 @@ LKP = {
 def convtime(val):
     """Convert time"""
     try:
-        return datetime.datetime.strptime(val, "%m/%d/%Y %H:%M:%S")
+        return datetime.strptime(val, "%m/%d/%Y %H:%M:%S")
     except ValueError:
-        return datetime.datetime.strptime(val, "%Y-%m-%d %H:%M")
+        return datetime.strptime(val, "%Y-%m-%d %H:%M")
 
 
 def main():
     """Go Main Go"""
+
+    cfg = json.load(open("../config/workshop.json"))
+    timing = cfg["timing"]
+    for key in timing:
+        timing[key] = datetime.strptime(
+            timing[key], "%Y-%m-%dT%H:%M:%SZ"
+        ).replace(tzinfo=timezone.utc)
+
+    speedup = (
+        timing["archive_end"] - timing["archive_begin"]
+    ).total_seconds() / (
+        timing["workshop_end"] - timing["workshop_begin"]
+    ).total_seconds()
+
     mydb = psycopg2.connect("dbname=nwa")
     mcursor = mydb.cursor()
-    mcursor.execute("DELETE from lsrs where date(valid) = '2024-03-27'")
+    mcursor.execute("DELETE from lsrs where date(valid) = '2026-03-25'")
     print(f"Deleted {mcursor.rowcount} rows")
 
     # Get me a client, stat
@@ -53,19 +68,19 @@ def main():
     cols = [a.get("formattedValue", "") for a in grid["rowData"][0]["values"]]
     for row in grid["rowData"][1:]:
         vals = [a.get("formattedValue") for a in row["values"]]
-        data = dict(zip(cols, vals, strict=True))
+        data = dict(zip(cols, vals, strict=False))
         if data.get("Type") is None:
+            print()
             continue
         # if data["Workshop UTC"].strip() != "":
         #    print(f"{convtime(data['Workshop UTC']):%Y-%m-%d %H:%M}")
         #    continue
-        # valid = convtime(
-        # data["Obs Time (UTC)"]).replace(tzinfo=ZoneInfo("UTC"))
-        # offset = (valid - ARCHIVE_T0).total_seconds() / SPEEDUP
-        # valid = RT_T0 + datetime.timedelta(seconds=offset)
-        # print(f"{valid:%Y-%m-%d %H:%M}")
+        valid = convtime(data["Obs Time (UTC)"]).replace(tzinfo=timezone.utc)
+        offset = (valid - timing["archive_begin"]).total_seconds() / speedup
+        valid = timing["workshop_begin"] + timedelta(seconds=offset)
+        print(f"{valid:%Y-%m-%d %H:%M}")
         # continue
-        valid = convtime(data["Workshop UTC"]).replace(tzinfo=ZoneInfo("UTC"))
+        valid = convtime(data["Workshop UTC"]).replace(tzinfo=timezone.utc)
         # display_valid = convtime(data["Workshop Reveal UTC"]).replace(
         #    tzinfo=ZoneInfo("UTC")
         # )

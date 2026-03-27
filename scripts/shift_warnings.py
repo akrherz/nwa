@@ -34,7 +34,7 @@ def main(nexrad: str):
 
     ncursor.execute(
         "DELETE from nwa_warnings where team = 'THE_WEATHER_BUREAU' and "
-        "issue > '2025-03-27' and issue < '2025-03-28'"
+        "issue > '2026-03-26' and issue < '2026-03-27'"
     )
     print(f"Removed {ncursor.rowcount} rows from the nwa_warnings table")
 
@@ -133,7 +133,10 @@ def main(nexrad: str):
             SELECT u.wfo as ugc_wfo, w.ctid, w.wfo, w.phenomena, w.eventid
             from nwa_warnings w, nws_ugc u
             WHERE w.issue > :sts and w.issue < :ets
-            and ST_Intersects(u.geom, w.geom)
+            and ST_Intersects(u.geom, w.geom) and st_area(ST_Intersection(
+                ST_ReducePrecision(u.geom, 0.0001),
+                ST_ReducePrecision(w.geom, 0.0001)
+            )::geography) / st_area(u.geom::geography) > 0.05
             and w.team = 'THE_WEATHER_BUREAU'
             ORDER by w.wfo, w.eventid ASC
         """),

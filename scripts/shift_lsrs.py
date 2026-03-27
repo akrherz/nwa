@@ -5,8 +5,9 @@ import math
 from datetime import datetime, timedelta, timezone
 
 from psycopg.rows import dict_row
-from pyiem import util
+from pyiem.database import get_dbconn
 from pyiem.network import Table as NetworkTable
+from pyiem.util import drct2text
 from pyproj import Transformer
 
 T_4326_2163 = Transformer.from_proj(4326, 2163, always_xy=True)
@@ -48,9 +49,9 @@ def workflow(csvfp):
     ).total_seconds()
 
     nt = NetworkTable("NEXRAD")
-    POSTGIS = util.get_dbconn("postgis")
+    POSTGIS = get_dbconn("postgis")
     pcursor = POSTGIS.cursor(row_factory=dict_row)
-    NWA = util.get_dbconn("nwa", host="localhost", user="mesonet")
+    NWA = get_dbconn("nwa", host="localhost", user="mesonet")
     ncursor = NWA.cursor(row_factory=dict_row)
 
     print(f"Speedup is {speedup:.2f}")
@@ -127,7 +128,7 @@ def workflow(csvfp):
         )
         row2 = ncursor.fetchone()
         deg = getdir(0 - row2["offsetx"], 0 - row2["offsety"])
-        drct = util.drct2text(deg)
+        drct = drct2text(deg)
         miles = row2["d"] * 0.0006214  # meters -> miles
         newcity = f"{miles:.1f} {drct} {row2['name']}"
         city = row["city"] if REAL88D == FAKE88D else newcity
@@ -168,13 +169,14 @@ def workflow(csvfp):
         sql = """
         INSERT into lsrs(valid, type, magnitude, city, county, state,
         source, remark, wfo, typetext, geom, display_valid)
-        values ('%s', '%s', %s, '%s',
-        '%s', '%s', '%s', '%s', '%s', '%s',
-        ST_POINT(%s, %s, 4326), '%s')
-        """ % (
+        values (%s, %s, %s, %s,
+        %s, %s, %s, %s, %s, %s,
+        ST_POINT(%s, %s, 4326), %s)
+        """
+        args = (
             valid.strftime("%Y-%m-%d %H:%M+00"),
             row["type"],
-            row["magnitude"] or 0,
+            float(row["magnitude"] or 0),
             city.replace("'", ""),
             cnty.replace("'", ""),
             st,
@@ -186,7 +188,7 @@ def workflow(csvfp):
             lat,
             valid.strftime("%Y-%m-%d %H:%M+00"),
         )
-        ncursor.execute(sql)
+        ncursor.execute(sql, args)
         if wfo != "DMX":
             continue
         csvfp.write(
