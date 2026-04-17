@@ -193,8 +193,7 @@ for ($i = 0; $row = pg_fetch_array($rs); $i++) {
         <tbody>
             <?php
             foreach ($tor_results as $k => $v) {
-                //$uri = sprintf("/auto/teamwarns_%s.png", $k);
-                $uri = sprintf("disabled");
+                $uri = sprintf("/auto/teamwarns_%s.png", urlencode($k));
                 echo sprintf(
                     "<tr><td><a href=\"%s\">%s</a></td><td>%02d</td><td>%05.2f</td><td>%04.2f</td>" .
                         "<td>%04d</td><td>%05.2f</td><td>%04.2f</td><td>%04.2f</td>" .
