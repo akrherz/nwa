@@ -41,7 +41,7 @@ $data = file("json-chat.txt");
 $i = 0;
 $j = 0;
 foreach($data as $line){
-    $txt = explode("|",trim($line));   
+    $txt = explode("|",trim($line));
     $short_time = explode(" ", $txt[1]);
     $c_num = $txt[0];
     if($txt[0] <= 9){
@@ -69,7 +69,7 @@ foreach($data as $line){
                $j++;
                if($txt[2] ==  $m1 || $txt[2] == $bruce || $txt[2] == $cathy){
                     $color = "FF0000";
-               } 
+               }
                elseif($txt[2] ==  $m2 || $txt[2] == $chris){
                     $color = "0000CC";
                }

@@ -8,4 +8,3 @@ lint.select = [
     "I",
 ]
 target-version = "py310"
-

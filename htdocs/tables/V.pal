@@ -3,7 +3,7 @@ Units:   KTS
 Step:    5
 Scale:   1.9426     ; converts internal units (M/S) to KTS
 
-RF: 118 0 149 
+RF: 118 0 149
 
 color: 0 143 126 142  118 21 24
 color: 10 112 0 0  153 0 0
@@ -18,9 +18,9 @@ color: -20 2 150 4 14 99 18
 color: -40 7 247 0
 color: -45 88 253 115
 color: -50 168 253 211
-color: -60 168 253 211 
+color: -60 168 253 211
 color: -70 7 254 225  7 254 225
 color: -80 0 102 192  7 216 246
 color: -90 5 9 170  0 102 192
-color: -100 82 0 151  5 9 170 
+color: -100 82 0 151  5 9 170
 color: -120 226 8 146 82 0 151

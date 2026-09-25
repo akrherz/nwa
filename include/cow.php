@@ -27,7 +27,7 @@ function __construct($dbconn){
 }
 
 /* Standard Workflow */
-function milk(){ 
+function milk(){
     $this->loadWarnings();
     $this->loadLSRs();
     $this->computeUGC();
@@ -91,7 +91,7 @@ function sqlLSRTypeBuilder(){
         else if ($v == "SV"){ $l[] = "H"; $l[] = "G"; $l[] = "D"; }
         else if ($v == "MA"){ $l[] = "M"; $l[] = "W"; }
         else if ($v == "FF"){ $l[] = "F"; };
-    }   
+    }
     $sql = "type IN ('". implode(",", $l) ."')";
     $sql = str_replace(",", "','", $sql);
     return $sql;
@@ -260,8 +260,8 @@ function computeUGC(){
         foreach($v["ugc"] as $k => $v){
             if (array_key_exists($v2, $this->ugcCache)){ continue; }
             /* Else we need to lookup the informations */
-            $sql = sprintf("SELECT *, 
-                   ST_area(ST_transform(geom,2163)) / 1000000.0 as area 
+            $sql = sprintf("SELECT *,
+                   ST_area(ST_transform(geom,2163)) / 1000000.0 as area
                    from nws_ugc WHERE ugc = '%s'", $v2);
             $rs = $this->callDB($sql);
             if (pg_num_rows($rs) > 0){
@@ -282,15 +282,15 @@ function computeSharedBorder(){
     foreach($this->warnings as $k => $v){
         $sql = sprintf("SELECT sum(sz) as s from (
      SELECT ST_length(ST_transform(a,2163)) as sz from (
-        select 
+        select
            ST_intersection(
       ST_buffer(ST_exteriorring(ST_geometryn(ST_multi(ST_union(n.geom)),1)),0.02),
       ST_exteriorring(ST_geometryn(ST_multi(ST_union(w.geom)),1))
             )  as a
-            from nwa_warnings w, nws_ugc n WHERE  
-            w.team = '%s' and phenomena = '%s' and eventid = '%s' 
+            from nwa_warnings w, nws_ugc n WHERE
+            w.team = '%s' and phenomena = '%s' and eventid = '%s'
             and n.polygon_class = 'C'
-            and st_overlaps(n.geom, w.geom) 
+            and st_overlaps(n.geom, w.geom)
          ) as foo
             WHERE not ST_isempty(a) ) as foo
        ", $v["wfo"], $v["phenomena"],
@@ -308,19 +308,19 @@ function computeSharedBorder(){
 
 function loadWarnings(){
     $sql = sprintf("
-    select *, ST_astext(geom) as tgeom from 
-      (SELECT distinct * from 
+    select *, ST_astext(geom) as tgeom from
+      (SELECT distinct * from
         (select *, ST_area(ST_transform(geom,2163)) / 1000000.0 as area,
          ST_perimeter(ST_transform(geom,2163)) as perimeter,
-         ST_xmax(geom) as lon0, ST_ymax(geom) as lat0 from 
-         nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and %s 
-         ORDER by issue ASC) as foo) 
-      as foo2", $this->sqlWFOBuilder(), 
-   $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"), 
+         ST_xmax(geom) as lon0, ST_ymax(geom) as lat0 from
+         nwa_warnings w WHERE %s and issue >= '%s' and issue < '%s' and %s
+         ORDER by issue ASC) as foo)
+      as foo2", $this->sqlWFOBuilder(),
+   $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"),
    $this->sqlTypeBuilder() );
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++){
-        $key = sprintf("%s-%s-%s-%s", $this->sts->format("Y"), $row["wfo"], 
+        $key = sprintf("%s-%s-%s-%s", $this->sts->format("Y"), $row["wfo"],
                        $row["phenomena"], $row["eventid"]);
         if ( ! isset($this->warnings[$key]) ){
             $this->warnings[$key] = Array("ugc"=> Array(), "geom" => "",
@@ -356,22 +356,22 @@ function loadWarnings(){
 } /* End of loadWarnings() */
 
 function loadLSRs() {
-    $sql = sprintf("SELECT distinct *, ST_x(geom) as lon0, ST_y(geom) as lat0, 
+    $sql = sprintf("SELECT distinct *, ST_x(geom) as lon0, ST_y(geom) as lat0,
         ST_astext(geom) as tgeom,
         ST_astext(ST_buffer( ST_transform(geom,2163), %s000)) as buffered
         from lsrs w WHERE wfo = '%s' and
         valid >= '%s' and valid < '%s' and %s and
-        ((type = 'M' and magnitude >= 34) or 
+        ((type = 'M' and magnitude >= 34) or
          (type = 'H' and magnitude >= %s) or type = 'W' or
          type = 'T' or (type = 'G' and magnitude >= 58) or type = 'D'
          or type = 'F')
         ORDER by valid ASC", $this->lsrbuffer, $this->forecastWFO,
-        $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"), 
+        $this->sts->format("Y/m/d H:i"), $this->ets->format("Y/m/d H:i"),
         $this->sqlLSRTypeBuilder(), $this->hailsize);
     $rs = $this->callDB($sql);
     for ($i=0;$row = @pg_fetch_array($rs,$i);$i++)
     {
-        $key = sprintf("%s-%s-%s-%s-%s", 
+        $key = sprintf("%s-%s-%s-%s-%s",
           $row["wfo"], $row["valid"], $row["type"],
           $row["magnitude"], $row["city"]);
         $this->lsrs[$key] = $row;
@@ -389,12 +389,12 @@ function areaVerify() {
         if (sizeof($v["lsrs"]) == 0){ continue; }
         $bufferedArray = Array();
         foreach($v["lsrs"] as $k2 => $v2){
-            $bufferedArray[] = sprintf("ST_SetSRID(ST_GeomFromText('%s'),2163)", 
+            $bufferedArray[] = sprintf("ST_SetSRID(ST_GeomFromText('%s'),2163)",
               $this->lsrs[$v2]["buffered"]);
         }
         $sql = sprintf("SELECT ST_Area(
-         ST_Intersection( ST_Union(ARRAY[%s]), 
-                          ST_Transform(ST_GeomFromEWKT('SRID=4326;%s'),2163) ) 
+         ST_Intersection( ST_Union(ARRAY[%s]),
+                          ST_Transform(ST_GeomFromEWKT('SRID=4326;%s'),2163) )
          ) / 1000000.0 as area",
          implode(",", $bufferedArray), $v["geom"] );
         $rs = $this->callDB($sql);
@@ -411,16 +411,16 @@ function sbwVerify() {
     foreach($this->warnings as $k => $v) {
         /* Look for LSRs! */
         $sql = sprintf("SELECT distinct *
-         from lsrs w WHERE 
-         geom && ST_SetSrid(ST_GeometryFromText('%s'),4326) and 
-         ST_contains(ST_SetSrid(ST_GeometryFromText('%s'),4326), geom) 
+         from lsrs w WHERE
+         geom && ST_SetSrid(ST_GeometryFromText('%s'),4326) and
+         ST_contains(ST_SetSrid(ST_GeometryFromText('%s'),4326), geom)
          and %s and wfo = '%s' and
-        ((type = 'M' and magnitude >= 34) or 
+        ((type = 'M' and magnitude >= 34) or
          (type = 'H' and magnitude >= %s) or type = 'W' or
          type = 'T' or (type = 'G' and magnitude >= 58) or type = 'D'
          or type = 'F')
          and valid >= '%s' and valid <= '%s' and valid < '%s'
-         ORDER by valid ASC", 
+         ORDER by valid ASC",
          $v["geom"], $v["geom"], $this->sqlLSRTypeBuilder(),
          $this->forecastWFO, $this->hailsize,
          date("Y/m/d H:i", strtotime($v["issue"])),
@@ -428,7 +428,7 @@ function sbwVerify() {
          $this->ets->format("Y/m/d H:i") );
         $rs = $this->callDB($sql);
         for ($i=0;$row=@pg_fetch_array($rs,$i);$i++){
-            $key = sprintf("%s-%s-%s-%s-%s", 
+            $key = sprintf("%s-%s-%s-%s-%s",
                    $row["wfo"], $row["valid"], $row["type"],
                    $row["magnitude"], $row["city"]);
             $verify = False;
@@ -452,7 +452,7 @@ function sbwVerify() {
             if ($verify){
                 $this->warnings[$k]["verify"] = True;
             }
-            if ($verify || $this->lsrs[$key]["tdq"]){ 
+            if ($verify || $this->lsrs[$key]["tdq"]){
                 $this->warnings[$k]["lsrs"][] = $key;
                 $this->lsrs[$key]["warned"] = True;
                 $this->lsrs[$key]["leadtime"] = ($this->lsrs[$key]["ts"] -
