@@ -43,7 +43,7 @@ Refresh: 1
     $rs = pg_query($conn, "SELECT ST_astext(geom) as t, *,
     to_char(issue at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_issue,
     to_char(expire at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_expire
-    from nwa_warnings 
+    from nwa_warnings
     WHERE phenomena = 'TO' and expire > now() and issue < now()
       and team != 'THE_WEATHER_BUREAU'");
 } else {
@@ -54,7 +54,7 @@ Refresh: 1
     $rs = pg_query($conn, "SELECT ST_astext(geom) as t, *,
     to_char(issue at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_issue,
     to_char(expire at time zone 'UTC', 'YYYY-MM-DDThh24:MI:SSZ') as iso_expire
-    from nwa_warnings 
+    from nwa_warnings
     WHERE  expire > now() and issue < now()
     and team != 'THE_WEATHER_BUREAU'");
 }

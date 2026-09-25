@@ -48,7 +48,7 @@ pg_execute(
     "INSERT",
     array(
         $siteID, $warnID, date("Y-m-d H:i", $sts),
-        date("Y-m-d H:i", $ets), $geom, $warnType, 
+        date("Y-m-d H:i", $ets), $geom, $warnType,
 	    ($tokens[2] == 'TOR_EM') ? 't': 'f', $data, $tokens[19],
         $cip),
 );
